@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Dict, Any
 
 
@@ -18,8 +18,7 @@ class AuditEventResponse(BaseModel):
     previous_hash: str
     current_hash: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AuditChainVerificationResult(BaseModel):

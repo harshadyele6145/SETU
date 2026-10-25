@@ -6,6 +6,7 @@ from backend.app.core.config import settings
 from backend.app.core.database import engine, Base
 from backend.app.models import *  # Import all models to register with Base
 from backend.app.api.health import router as health_router
+from backend.app.api.auth import router as auth_router
 
 
 @asynccontextmanager
@@ -36,6 +37,7 @@ app.add_middleware(
 
 # Include core routers
 app.include_router(health_router)
+app.include_router(auth_router)
 
 
 @app.get("/")

@@ -2,44 +2,48 @@
 
 ## Session Date: 2026-10-25
 **Branch:** `master`  
-**Completed Milestone:** Milestone 1 — Foundation
+**Completed Milestones:**
+- Milestone 1 — Foundation
+- Milestone 2 — Authentication and Data Model (P0)
 
 ---
 
-## 1. Work Completed in Milestone 1
-- Initialized clean Git repository and configured `.gitignore` and `.env.example`.
-- Preserved SIH26262 working specification (`docs/problem-statement-working-spec.md`) and verified official portal statement (`docs/problem-statement.md`).
-- Authored domain research (`docs/current-state-research.md`), regulatory rules (`docs/regulatory-rules-register.md`), requirements (`docs/requirements.md`), traceability matrix (`docs/requirements-traceability.md`), system architecture (`docs/architecture.md`), data model (`docs/data-model.md`), workflow rules (`docs/workflow-rules.md`), and integration plan (`docs/integration-plan.md`).
-- Scaffolded backend using FastAPI, Pydantic v2, SQLAlchemy 2.0, Alembic migrations, and Pytest.
-- Configured 16 relational database models covering regions, institutions, users, workflow stages, applications, EVC visits, compliance obligations, document registries, alerts, notifications, and cryptographic audit events.
-- Scaffolded Alembic migrations, generated `initial_schema.py`, and applied migrations to database.
-- Scaffolded frontend using React 18, TypeScript, Vite, Tailwind CSS with custom navy & teal palette, and Lucide icons.
-- Built persistent demo banner (`DEMO ENVIRONMENT — FICTIONAL DATA — NOT CONNECTED TO AICTE SYSTEMS`) and all 15 functional navigation items.
-- Configured and executed production frontend build (`npm run build`).
-- Implemented and executed automated backend tests verifying root, health, readiness, and database connectivity.
-- Probed live server boot-up and verified API connection and database response.
+## 1. Work Completed in Milestone 2
+- Implemented core authentication system using bcrypt password hashing and signed JWT bearer tokens.
+- Defined 8 official RBAC roles: `INST_ADMIN`, `RO_OFFICER`, `BO_OFFICER`, `EVC_COORD`, `COMM_MEMBER`, `COMP_REVIEW`, `COMP_AUTH`, and `SYS_ADMIN`.
+- Built server-enforced scoping functions:
+  - `enforce_institution_scope`: strictly limits Institution Admins to their assigned institution.
+  - `enforce_region_scope`: strictly confines Regional Officers to their designated geographic region.
+  - `require_statutory_authority`: enforces regulatory boundary reserving statutory approvals/rejections to Competent Authority (`COMP_AUTH`).
+- Implemented API endpoints in `backend/app/api/auth.py`:
+  - `POST /api/auth/login`
+  - `POST /api/auth/logout`
+  - `GET /api/auth/me`
+- Implemented synthetic database seeding script (`backend/seed/seed_data.py`):
+  - 5 Regions (North, West, South, East, Central)
+  - 10 Fictional Technical Institutions
+  - 10 Demo Users across all 8 roles with default credential `DemoPass@2026`
+  - 4 Workflow Routes (Routes A, B, C, D) and 36 Workflow Stages
+  - Genesis cryptographic audit event
+- Built frontend `AuthContext` and integrated interactive persona switcher in the navigation header.
+- Authored and verified comprehensive automated tests in `test_auth.py` and `test_security_scopes.py`.
 
 ---
 
 ## 2. Commands Executed & Results
 | Command | Purpose | Result / Exit Code |
 |---|---|---|
-| `git init; git config ...` | Initialize Git repository | Exit 0 (Success) |
-| `pip install -r backend/requirements.txt` | Install Python dependencies | Exit 0 (Success) |
-| `npm install --prefix frontend` | Install React frontend packages | Exit 0 (Success) |
-| `alembic revision --autogenerate -m "initial_schema"` | Generate DB schema migration | Exit 0 (Success) |
-| `alembic upgrade head` | Apply initial schema migration | Exit 0 (Success) |
-| `npm run build --prefix frontend` | Build production frontend bundle | Exit 0 (Success, 12.42s) |
-| `pytest` | Execute automated backend health tests | Exit 0 (2 passed in 0.82s) |
-| `Start-Process uvicorn ... Invoke-RestMethod /health` | Probe live server & DB health | Exit 0 (Healthy, DB connected) |
+| `python -m backend.seed.seed_data` | Seed database with synthetic institutions & users | Exit 0 (Success) |
+| `pytest backend/tests/test_auth.py backend/tests/test_security_scopes.py` | Run auth & scope tests | Exit 0 (8 passed in 2.20s) |
+| `pytest` | Run full test suite | Exit 0 (10 passed in 4.02s) |
+| `npm run build --prefix frontend` | Verify frontend compilation with auth context | Exit 0 (Success, 11.91s) |
 
 ---
 
 ## 3. Known Defects & Limitations
-- Local Windows host lacks Docker daemon; containerized deployment is fully supported via provided `backend/Dockerfile`, `frontend/Dockerfile`, and `docker-compose.yml`.
-- Standard Windows sandbox blocks internal socket binding required by Python's `asyncio` event loop; tests and server runs execute outside sandbox with loopback permission.
+- All demo user passwords are set to `DemoPass@2026` for prototype evaluation; production deployment requires mandatory credential change and MFA integration.
 
 ---
 
 ## 4. Next Steps
-- Execute Milestone 2: Implement authentication, password hashing, JWT sessions, 8 RBAC roles, and server-enforced institutional/regional scoping.
+- Execute Milestone 3: Implement multi-route Workflow Engine (Routes A, B, C, D), transition guards, mandatory return reasons, application timelines, and cryptographic audit hash-chain verification.

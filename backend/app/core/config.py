@@ -1,5 +1,5 @@
 import os
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
 from typing import List, Any
 
@@ -34,9 +34,7 @@ class Settings(BaseSettings):
     SCHEDULER_INTERVAL_SECONDS: int = 60
     MAX_NOTIFICATION_RETRIES: int = 3
 
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @field_validator("DEBUG", mode="before")
     @classmethod

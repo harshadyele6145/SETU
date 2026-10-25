@@ -8,8 +8,8 @@
 | Relational Data Model & Migrations | Milestone 1 | VERIFIED & DONE | `backend/alembic/versions/*_initial_schema.py` |
 | Frontend Shell & 15 Nav Views | Milestone 1 | VERIFIED & DONE | `frontend/src/App.tsx`, `frontend/src/components/Sidebar.tsx` |
 | External Portal Adapter Interface | Milestone 1 | IMPLEMENTED | `backend/app/adapters/external_portal.py` |
-| Authentication & RBAC (8 Roles) | Milestone 2 | PLANNED | Architecture defined |
-| Scope-Enforced Data Isolation | Milestone 2 | PLANNED | Architecture defined |
+| Authentication & RBAC (8 Roles) | Milestone 2 | VERIFIED & DONE | `backend/app/api/auth.py`, `backend/tests/test_auth.py` (5 passed) |
+| Scope-Enforced Data Isolation | Milestone 2 | VERIFIED & DONE | `backend/app/services/auth_service.py`, `backend/tests/test_security_scopes.py` (3 passed) |
 | Workflow State Machine (4 Routes) | Milestone 3 | PLANNED | FSM designed |
 | Audit Trail & SHA-256 Hash Chaining | Milestone 3 | IMPLEMENTED | `backend/app/services/audit_service.py` |
 | Compliance Obligations & Evidence | Milestone 4 | PLANNED | Models designed |
