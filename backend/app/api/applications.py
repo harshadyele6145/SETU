@@ -80,15 +80,32 @@ def list_applications(
     # Server-enforced scope boundary:
     # 1. Institution Administrator can only see own institution applications
     if current_user.role == UserRole.INST_ADMIN.value:
+        if not current_user.institution_id:
+            return []
         stmt = stmt.where(Application.institution_id == current_user.institution_id)
-    elif institution_id:
-        stmt = stmt.where(Application.institution_id == institution_id)
-
-    # 2. Regional Officer can only see applications from their own region
-    if current_user.role == UserRole.RO_OFFICER.value:
+    # 2. Regional Roles (RO Officer, Regional Director, EVC Coord) can only see applications from their own region
+    elif current_user.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]:
+        if not current_user.region_id:
+            return []
         stmt = stmt.where(Application.region_id == current_user.region_id)
-    elif region_id:
-        stmt = stmt.where(Application.region_id == region_id)
+    # 3. Committee Members only see applications linked to their assigned inspection visits
+    elif current_user.role in [UserRole.COMMITTEE_MBR.value, UserRole.COMM_MEMBER.value]:
+        from backend.app.models.evc import EVCVisit, EVCExpert
+        assigned_ids = [
+            row[0] for row in db.query(EVCVisit.application_id)
+            .join(EVCExpert)
+            .filter(EVCExpert.contact_email == current_user.email)
+            .all()
+        ]
+        if not assigned_ids:
+            return []
+        stmt = stmt.where(Application.id.in_(assigned_ids))
+    # 4. Cross-regional roles can filter optionally
+    else:
+        if institution_id:
+            stmt = stmt.where(Application.institution_id == institution_id)
+        if region_id:
+            stmt = stmt.where(Application.region_id == region_id)
 
     if status:
         stmt = stmt.where(Application.status == status)
@@ -139,8 +156,19 @@ def get_application(
     # Scope validation
     if current_user.role == UserRole.INST_ADMIN.value:
         enforce_institution_scope(current_user, app.institution_id)
-    elif current_user.role == UserRole.RO_OFFICER.value:
+    elif current_user.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value]:
         enforce_region_scope(current_user, app.region_id)
+    elif current_user.role in [UserRole.COMMITTEE_MBR.value, UserRole.COMM_MEMBER.value]:
+        from backend.app.models.evc import EVCVisit, EVCExpert
+        is_assigned = db.query(EVCVisit).join(EVCExpert).filter(
+            EVCVisit.application_id == app.id,
+            EVCExpert.contact_email == current_user.email
+        ).first() is not None
+        if not is_assigned:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Security violation: Committee members can only view applications assigned to their inspection visits."
+            )
 
     base_resp = format_application_response(app)
 

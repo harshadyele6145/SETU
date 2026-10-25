@@ -22,11 +22,18 @@ class EVCService:
 
         # Server-enforced scope boundaries
         if user.role == "INST_ADMIN":
+            if not user.institution_id:
+                return []
             query = query.filter(Application.institution_id == user.institution_id)
-        elif user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"] and user.region_id:
+        elif user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"]:
+            if not user.region_id:
+                return []
             query = query.filter(Application.region_id == user.region_id)
+        elif user.role in ["COMMITTEE_MBR", "COMM_MEMBER"]:
+            query = query.join(EVCExpert).filter(EVCExpert.contact_email == user.email)
 
-        if region_id and user.role not in ["INST_ADMIN", "RO_OFFICER", "REGIONAL_DIR"]:
+        # Cross-regional users may optionally filter by region
+        if region_id and user.role not in ["INST_ADMIN", "RO_OFFICER", "REGIONAL_DIR", "EVC_COORD", "COMMITTEE_MBR", "COMM_MEMBER"]:
             query = query.filter(Application.region_id == region_id)
 
         if status:
@@ -43,7 +50,7 @@ class EVCService:
         user: User
     ) -> EVCVisit:
         # Check permissions
-        if user.role not in ["EVC_COORD", "RO_OFFICER", "BO_OFFICER", "REGIONAL_DIR", "COMP_AUTH"]:
+        if user.role not in ["EVC_COORD", "RO_OFFICER", "BUREAU_OFFICER", "REGIONAL_DIR", "COMP_AUTH", "SYS_ADMIN"]:
             raise PermissionError("Access denied: You do not have permission to schedule EVC inspections")
 
         app = db.query(Application).filter(Application.id == application_id).first()
@@ -51,8 +58,8 @@ class EVCService:
             raise ValueError("Application not found")
 
         # Region scope check
-        if user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"] and user.region_id:
-            if app.region_id != user.region_id:
+        if user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"]:
+            if not user.region_id or app.region_id != user.region_id:
                 raise PermissionError("Security violation: Cannot schedule EVC for application outside your assigned region")
 
         visit = db.query(EVCVisit).filter(EVCVisit.application_id == application_id).first()
@@ -111,8 +118,8 @@ class EVCService:
 
         # Scope check
         app = visit.application
-        if user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"] and user.region_id:
-            if app.region_id != user.region_id:
+        if user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"]:
+            if not user.region_id or app.region_id != user.region_id:
                 raise PermissionError("Security violation: Cannot modify EVC outside assigned region")
 
         prev_date = visit.confirmed_date
@@ -153,8 +160,8 @@ class EVCService:
             raise ValueError("EVC Visit not found")
 
         app = visit.application
-        if user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"] and user.region_id:
-            if app.region_id != user.region_id:
+        if user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"]:
+            if not user.region_id or app.region_id != user.region_id:
                 raise PermissionError("Security violation: Cannot assign experts outside assigned region")
 
         expert = EVCExpert(
@@ -203,8 +210,12 @@ class EVCService:
             raise ValueError("EVC Visit not found")
 
         app = visit.application
-        if user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"] and user.region_id:
-            if app.region_id != user.region_id:
+        if user.role in ["COMMITTEE_MBR", "COMM_MEMBER"]:
+            is_expert = any(e.contact_email == user.email for e in visit.experts)
+            if not is_expert:
+                raise PermissionError("Security violation: Only assigned committee members can submit the inspection report")
+        elif user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"]:
+            if not user.region_id or app.region_id != user.region_id:
                 raise PermissionError("Security violation: Cannot upload EVC report outside assigned region")
 
         # Save report file

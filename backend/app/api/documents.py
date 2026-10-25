@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, desc
 from backend.app.core.database import get_db
 from backend.app.models.document import DocumentRegistry
+from backend.app.models.institution import Institution
+from backend.app.models.evc import EVCVisit, EVCExpert
 from backend.app.models.user import User
 from backend.app.core.security import UserRole
 from backend.app.schemas.document import DocumentResponse, DocumentVerifyRequest
@@ -55,8 +57,27 @@ def list_documents(
 ):
     stmt = select(DocumentRegistry)
 
+    # Server-enforced scope boundary
     if current_user.role == UserRole.INST_ADMIN.value:
+        if not current_user.institution_id:
+            return []
         stmt = stmt.where(DocumentRegistry.institution_id == current_user.institution_id)
+    elif current_user.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]:
+        if not current_user.region_id:
+            return []
+        stmt = stmt.join(Institution, DocumentRegistry.institution_id == Institution.id).where(
+            Institution.region_id == current_user.region_id
+        )
+    elif current_user.role in [UserRole.COMMITTEE_MBR.value, UserRole.COMM_MEMBER.value]:
+        assigned_app_ids = [
+            row[0] for row in db.query(EVCVisit.application_id)
+            .join(EVCExpert)
+            .filter(EVCExpert.contact_email == current_user.email)
+            .all()
+        ]
+        if not assigned_app_ids:
+            return []
+        stmt = stmt.where(DocumentRegistry.application_id.in_(assigned_app_ids))
     elif institution_id:
         stmt = stmt.where(DocumentRegistry.institution_id == institution_id)
 
@@ -82,6 +103,9 @@ async def register_document(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if current_user.role == UserRole.INST_ADMIN.value:
+        enforce_institution_scope(current_user, institution_id)
+
     doc = await document_service.register_document(
         db=db,
         institution_id=institution_id,
@@ -175,4 +199,3 @@ def extract_and_analyze_document(
         registered_expiry=doc.expiry_date.isoformat() if doc.expiry_date else None
     )
     return analysis
-

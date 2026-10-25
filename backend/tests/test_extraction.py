@@ -1,6 +1,7 @@
 import io
 from fastapi.testclient import TestClient
 from backend.seed.seed_data import seed_database
+from backend.app.models.institution import Institution
 
 
 def get_token_for(client: TestClient, email: str) -> str:
@@ -36,7 +37,8 @@ def test_document_extraction_and_discrepancy_detection(client: TestClient, db_se
     # 3. Verify cross-tenant institution protection
     # An institution from a different scope cannot extract another institution's document
     # Find a document belonging to a different institution than inst_admin (inst1: 1-100234501)
-    other_doc = next(d for d in docs if d["institution_id"] != test_doc["institution_id"])
+    inst1 = db_session.query(Institution).filter(Institution.aicte_id == "1-100234501").first()
+    other_doc = next(d for d in docs if d["institution_id"] != inst1.id)
     denied_res = client.get(
         f"/api/documents/{other_doc['id']}/extract",
         headers={"Authorization": f"Bearer {inst_token}"}

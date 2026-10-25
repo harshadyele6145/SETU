@@ -175,9 +175,24 @@ class AlertService:
 
         # Scoping
         if user.role == "INST_ADMIN":
+            if not user.institution_id:
+                return []
             query = query.filter(Alert.institution_id == user.institution_id)
-        elif user.role in ["RO_OFFICER", "REGIONAL_DIR"]:
+        elif user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"]:
+            if not user.region_id:
+                return []
             query = query.filter(Alert.region_id == user.region_id)
+        elif user.role in ["COMMITTEE_MBR", "COMM_MEMBER"]:
+            from backend.app.models.evc import EVCVisit, EVCExpert
+            assigned_app_ids = [
+                row[0] for row in db.query(EVCVisit.application_id)
+                .join(EVCExpert)
+                .filter(EVCExpert.contact_email == user.email)
+                .all()
+            ]
+            if not assigned_app_ids:
+                return []
+            query = query.filter(Alert.entity_type == "APPLICATION", Alert.entity_id.in_(assigned_app_ids))
         # HQ roles, Auditors, Comp Auth see all alerts
 
         if is_acknowledged is not None:

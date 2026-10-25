@@ -11,6 +11,8 @@ from backend.app.core.database import get_db
 from backend.app.services.auth_service import get_current_user
 from backend.app.models.user import User
 from backend.app.models.application import Application
+from backend.app.models.evc import EVCVisit, EVCExpert
+from backend.app.core.security import UserRole
 from backend.app.models.base import utc_now
 
 
@@ -60,18 +62,33 @@ def get_pendency_report(
 ):
     query = db.query(Application).filter(Application.status.notin_(["APPROVED", "REJECTED"]))
 
-    # Scope enforcement
-    if current_user.role == "INST_ADMIN":
+    # Strict server-enforced scoping
+    if current_user.role == UserRole.INST_ADMIN.value:
+        if not current_user.institution_id:
+            return []
         query = query.filter(Application.institution_id == current_user.institution_id)
-    elif current_user.role in ["RO_OFFICER", "REGIONAL_DIR"]:
+    elif current_user.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]:
+        if not current_user.region_id:
+            return []
         query = query.filter(Application.region_id == current_user.region_id)
+    elif current_user.role in [UserRole.COMMITTEE_MBR.value, UserRole.COMM_MEMBER.value]:
+        assigned_ids = [
+            row[0] for row in db.query(EVCVisit.application_id)
+            .join(EVCExpert)
+            .filter(EVCExpert.contact_email == current_user.email)
+            .all()
+        ]
+        if not assigned_ids:
+            return []
+        query = query.filter(Application.id.in_(assigned_ids))
+    elif region_id:
+        # Cross-regional roles can optionally filter by region_id
+        query = query.filter(Application.region_id == region_id)
 
     if status:
         query = query.filter(Application.status == status)
     if route:
         query = query.filter(Application.route == route)
-    if region_id and current_user.role not in ["INST_ADMIN", "RO_OFFICER", "REGIONAL_DIR"]:
-        query = query.filter(Application.region_id == region_id)
 
     apps = query.order_by(desc(Application.stage_entered_at)).all()
     data = format_pendency_data(apps)
@@ -86,6 +103,7 @@ def get_pendency_report(
 def export_pendency_csv(
     status: Optional[str] = None,
     route: Optional[str] = None,
+    region_id: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -94,17 +112,47 @@ def export_pendency_csv(
     """
     query = db.query(Application).filter(Application.status.notin_(["APPROVED", "REJECTED"]))
 
-    if current_user.role == "INST_ADMIN":
-        query = query.filter(Application.institution_id == current_user.institution_id)
-    elif current_user.role in ["RO_OFFICER", "REGIONAL_DIR"]:
-        query = query.filter(Application.region_id == current_user.region_id)
+    # Strict server-enforced scoping
+    if current_user.role == UserRole.INST_ADMIN.value:
+        if not current_user.institution_id:
+            apps = []
+        else:
+            query = query.filter(Application.institution_id == current_user.institution_id)
+            apps = query.order_by(desc(Application.stage_entered_at)).all()
+    elif current_user.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]:
+        if not current_user.region_id:
+            apps = []
+        else:
+            query = query.filter(Application.region_id == current_user.region_id)
+            apps = query.order_by(desc(Application.stage_entered_at)).all()
+    elif current_user.role in [UserRole.COMMITTEE_MBR.value, UserRole.COMM_MEMBER.value]:
+        assigned_ids = [
+            row[0] for row in db.query(EVCVisit.application_id)
+            .join(EVCExpert)
+            .filter(EVCExpert.contact_email == current_user.email)
+            .all()
+        ]
+        if not assigned_ids:
+            apps = []
+        else:
+            query = query.filter(Application.id.in_(assigned_ids))
+            apps = query.order_by(desc(Application.stage_entered_at)).all()
+    else:
+        if region_id:
+            query = query.filter(Application.region_id == region_id)
+        if status:
+            query = query.filter(Application.status == status)
+        if route:
+            query = query.filter(Application.route == route)
+        apps = query.order_by(desc(Application.stage_entered_at)).all()
 
-    if status:
-        query = query.filter(Application.status == status)
-    if route:
-        query = query.filter(Application.route == route)
+    if current_user.role in [UserRole.INST_ADMIN.value, UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value, UserRole.COMMITTEE_MBR.value] and apps:
+        if status:
+            query = query.filter(Application.status == status)
+        if route:
+            query = query.filter(Application.route == route)
+        apps = query.order_by(desc(Application.stage_entered_at)).all()
 
-    apps = query.order_by(desc(Application.stage_entered_at)).all()
     rows = format_pendency_data(apps)
 
     output = io.StringIO()

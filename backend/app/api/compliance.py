@@ -5,6 +5,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, desc
 from backend.app.core.database import get_db
 from backend.app.models.compliance import ComplianceObligation, ComplianceEvidence
+from backend.app.models.institution import Institution
+from backend.app.models.evc import EVCVisit, EVCExpert
 from backend.app.models.user import User
 from backend.app.core.security import UserRole
 from backend.app.schemas.compliance import (
@@ -76,9 +78,27 @@ def list_obligations(
 ):
     stmt = select(ComplianceObligation)
 
-    # Scoping: If user is an Institution Administrator, restrict to own institution
+    # Server-enforced scope boundary
     if current_user.role == UserRole.INST_ADMIN.value:
+        if not current_user.institution_id:
+            return []
         stmt = stmt.where(ComplianceObligation.institution_id == current_user.institution_id)
+    elif current_user.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]:
+        if not current_user.region_id:
+            return []
+        stmt = stmt.join(Institution, ComplianceObligation.institution_id == Institution.id).where(
+            Institution.region_id == current_user.region_id
+        )
+    elif current_user.role in [UserRole.COMMITTEE_MBR.value, UserRole.COMM_MEMBER.value]:
+        assigned_app_ids = [
+            row[0] for row in db.query(EVCVisit.application_id)
+            .join(EVCExpert)
+            .filter(EVCExpert.contact_email == current_user.email)
+            .all()
+        ]
+        if not assigned_app_ids:
+            return []
+        stmt = stmt.where(ComplianceObligation.application_id.in_(assigned_app_ids))
     elif institution_id:
         stmt = stmt.where(ComplianceObligation.institution_id == institution_id)
 
@@ -96,6 +116,9 @@ def create_obligation(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if current_user.role == UserRole.INST_ADMIN.value:
+        enforce_institution_scope(current_user, payload.institution_id)
+
     ob = compliance_service.create_obligation(
         db=db,
         institution_id=payload.institution_id,
@@ -121,8 +144,21 @@ def get_obligation(
     if not ob:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Compliance obligation not found")
 
+    # Scope validation
     if current_user.role == UserRole.INST_ADMIN.value:
         enforce_institution_scope(current_user, ob.institution_id)
+    elif current_user.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]:
+        if not current_user.region_id or not ob.institution or ob.institution.region_id != current_user.region_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied: Obligation outside your assigned region")
+    elif current_user.role in [UserRole.COMMITTEE_MBR.value, UserRole.COMM_MEMBER.value]:
+        assigned_app_ids = [
+            row[0] for row in db.query(EVCVisit.application_id)
+            .join(EVCExpert)
+            .filter(EVCExpert.contact_email == current_user.email)
+            .all()
+        ]
+        if not ob.application_id or ob.application_id not in assigned_app_ids:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied: Not assigned to this obligation's inspection")
 
     return format_obligation_response(ob)
 
@@ -135,6 +171,13 @@ async def submit_obligation_evidence(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    ob = db.get(ComplianceObligation, id)
+    if not ob:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Compliance obligation not found")
+
+    if current_user.role == UserRole.INST_ADMIN.value:
+        enforce_institution_scope(current_user, ob.institution_id)
+
     evidence = await compliance_service.submit_evidence(
         db=db,
         obligation_id=id,
@@ -167,6 +210,15 @@ def verify_evidence(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    evidence_obj = db.get(ComplianceEvidence, evidence_id)
+    if not evidence_obj:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Evidence record not found")
+
+    ob = evidence_obj.obligation
+    if current_user.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]:
+        if not current_user.region_id or not ob.institution or ob.institution.region_id != current_user.region_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied: Cannot verify evidence outside assigned region")
+
     evidence = compliance_service.verify_evidence(
         db=db,
         evidence_id=evidence_id,
@@ -190,4 +242,3 @@ def verify_evidence(
         verified_at=evidence.verified_at,
         rejection_reason=evidence.rejection_reason
     )
-

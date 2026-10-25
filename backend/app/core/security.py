@@ -9,10 +9,14 @@ from backend.app.core.config import settings
 class UserRole(str, Enum):
     INST_ADMIN = "INST_ADMIN"        # Institution Administrator
     RO_OFFICER = "RO_OFFICER"        # Regional Officer
+    REGIONAL_DIR = "REGIONAL_DIR"    # Regional Director
     BO_OFFICER = "BO_OFFICER"        # Bureau Officer
+    BUREAU_OFFICER = "BUREAU_OFFICER"# Bureau Officer (Alias)
     EVC_COORD = "EVC_COORD"          # EVC Coordinator
     COMM_MEMBER = "COMM_MEMBER"      # Committee Member
+    COMMITTEE_MBR = "COMMITTEE_MBR"  # Committee Member (Alias)
     COMP_REVIEW = "COMP_REVIEW"      # Compliance Reviewer
+    COMP_REV = "COMP_REV"            # Compliance Reviewer (Alias)
     COMP_AUTH = "COMP_AUTH"          # Competent Authority
     SYS_ADMIN = "SYS_ADMIN"          # System Administrator
 

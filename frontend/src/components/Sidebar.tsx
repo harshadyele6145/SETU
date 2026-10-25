@@ -17,31 +17,96 @@ import {
   Zap,
   Gauge
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface SidebarProps {
   className?: string;
 }
 
-export const navItems = [
+export interface NavItemConfig {
+  name: string;
+  path: string;
+  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>;
+  roles?: string[];
+}
+
+export const navItems: NavItemConfig[] = [
   { name: 'Operations Dashboard', path: '/', icon: LayoutDashboard },
   { name: 'Applications', path: '/applications', icon: FileText },
   { name: 'Workflow Timeline', path: '/timeline', icon: GitCommit },
-  { name: 'EVC Management', path: '/evc', icon: Calendar },
+  { 
+    name: 'EVC Management', 
+    path: '/evc', 
+    icon: Calendar,
+    roles: ['RO_OFFICER', 'REGIONAL_DIR', 'EVC_COORD', 'COMM_MEMBER', 'COMMITTEE_MBR', 'BO_OFFICER', 'BUREAU_OFFICER', 'COMP_AUTH', 'SYS_ADMIN'] 
+  },
   { name: 'Undertakings & Compliance', path: '/compliance', icon: CheckSquare },
   { name: 'Documents & Renewals', path: '/documents', icon: Files },
   { name: 'Alerts & Escalations', path: '/alerts', icon: Bell },
-  { name: 'Reports & Analytics', path: '/reports', icon: BarChart3 },
-  { name: 'Audit Trail', path: '/audit', icon: ShieldCheck },
-  { name: 'Workflow Rules', path: '/rules', icon: Sliders },
-  { name: 'User & Access Admin', path: '/users', icon: Users },
-  { name: 'Notification Failures', path: '/notifications-recovery', icon: AlertOctagon },
-  { name: 'Integration Monitor', path: '/integration', icon: Network },
-  { name: 'Compliance Dependencies', path: '/dependencies', icon: GitCommit },
-  { name: 'Attention Queue', path: '/attention', icon: Zap },
-  { name: 'Bottleneck Cockpit', path: '/bottlenecks', icon: Gauge },
+  { 
+    name: 'Attention Queue', 
+    path: '/attention', 
+    icon: Zap,
+    roles: ['RO_OFFICER', 'REGIONAL_DIR', 'BO_OFFICER', 'BUREAU_OFFICER', 'COMP_AUTH', 'SYS_ADMIN']
+  },
+  { 
+    name: 'Bottleneck Cockpit', 
+    path: '/bottlenecks', 
+    icon: Gauge,
+    roles: ['RO_OFFICER', 'REGIONAL_DIR', 'BO_OFFICER', 'BUREAU_OFFICER', 'COMP_AUTH', 'SYS_ADMIN']
+  },
+  { 
+    name: 'Compliance Dependencies', 
+    path: '/dependencies', 
+    icon: GitCommit,
+    roles: ['COMP_REVIEW', 'COMP_REV', 'RO_OFFICER', 'REGIONAL_DIR', 'BO_OFFICER', 'BUREAU_OFFICER', 'COMP_AUTH', 'SYS_ADMIN']
+  },
+  { 
+    name: 'Reports & Analytics', 
+    path: '/reports', 
+    icon: BarChart3,
+    roles: ['RO_OFFICER', 'REGIONAL_DIR', 'BO_OFFICER', 'BUREAU_OFFICER', 'COMP_AUTH', 'SYS_ADMIN']
+  },
+  { 
+    name: 'Audit Trail', 
+    path: '/audit', 
+    icon: ShieldCheck,
+    roles: ['RO_OFFICER', 'REGIONAL_DIR', 'BO_OFFICER', 'BUREAU_OFFICER', 'COMP_AUTH', 'SYS_ADMIN']
+  },
+  { 
+    name: 'Workflow Rules', 
+    path: '/rules', 
+    icon: Sliders 
+  },
+  { 
+    name: 'User & Access Admin', 
+    path: '/users', 
+    icon: Users,
+    roles: ['SYS_ADMIN', 'BO_OFFICER', 'BUREAU_OFFICER', 'COMP_AUTH']
+  },
+  { 
+    name: 'Notification Failures', 
+    path: '/notifications-recovery', 
+    icon: AlertOctagon,
+    roles: ['SYS_ADMIN', 'BO_OFFICER', 'BUREAU_OFFICER', 'COMP_AUTH']
+  },
+  { 
+    name: 'Integration Monitor', 
+    path: '/integration', 
+    icon: Network,
+    roles: ['SYS_ADMIN', 'BO_OFFICER', 'BUREAU_OFFICER', 'COMP_AUTH']
+  },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
+  const { user } = useAuth();
+
+  const filteredItems = navItems.filter((item) => {
+    if (!item.roles) return true;
+    if (!user || !user.role) return false;
+    return item.roles.includes(user.role);
+  });
+
   return (
     <aside 
       className={`w-64 bg-slate-900 text-slate-100 flex flex-col shrink-0 border-r border-slate-800 ${className}`}
@@ -58,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-        {navItems.map((item) => {
+        {filteredItems.map((item) => {
           const Icon = item.icon;
           return (
             <NavLink
@@ -90,4 +155,3 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     </aside>
   );
 };
-

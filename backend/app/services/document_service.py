@@ -6,6 +6,7 @@ from sqlalchemy import select
 from backend.app.models.document import DocumentRegistry
 from backend.app.models.institution import Institution
 from backend.app.models.user import User
+from backend.app.models.evc import EVCVisit, EVCExpert
 from backend.app.core.security import UserRole
 from backend.app.core.storage import storage_service
 from backend.app.services.auth_service import enforce_institution_scope
@@ -111,8 +112,7 @@ class DocumentService:
         db.add(new_doc)
         db.flush()
 
-        # Mark old document as SUPERSEDED
-        prev_old_status = old_doc.status
+        # Update previous document status to superseded
         old_doc.status = "SUPERSEDED"
 
         audit_service.record_event(
@@ -122,13 +122,12 @@ class DocumentService:
             entity_type="DOCUMENT",
             entity_id=new_doc.id,
             actor_id=actor.id,
-            previous_state=prev_old_status,
+            previous_state=old_doc.status,
             new_state="RENEWAL_SUBMITTED",
             details={
-                "version": new_doc.current_version,
-                "previous_doc_id": old_doc.id,
-                "new_expiry": expiry_date.isoformat(),
-                "sha256": sha256_hash
+                "previous_document_id": old_doc.id,
+                "new_version": new_doc.current_version,
+                "new_expiry_date": expiry_date.isoformat()
             }
         )
 
@@ -145,21 +144,30 @@ class DocumentService:
         comments: Optional[str],
         reviewer: User
     ) -> DocumentRegistry:
-        allowed_roles = (
+        if reviewer.role not in [
             UserRole.RO_OFFICER.value,
-            UserRole.BO_OFFICER.value,
-            UserRole.COMP_REVIEW.value,
-            UserRole.COMP_AUTH.value
-        )
-        if reviewer.role not in allowed_roles:
+            UserRole.REGIONAL_DIR.value,
+            UserRole.COMP_REV.value,
+            UserRole.BUREAU_OFFICER.value,
+            UserRole.COMP_AUTH.value,
+            UserRole.SYS_ADMIN.value
+        ]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Unauthorized: Role {reviewer.role} cannot verify institutional documents."
+                detail="Not authorized to verify statutory compliance documents"
             )
 
         doc = db.get(DocumentRegistry, document_id)
         if not doc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document record not found")
+
+        # Regional scope check
+        if reviewer.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value]:
+            if not reviewer.region_id or not doc.institution or doc.institution.region_id != reviewer.region_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Cannot verify document outside your assigned region"
+                )
 
         prev_status = doc.status
         now = datetime.now(timezone.utc)
@@ -195,9 +203,24 @@ class DocumentService:
         if not doc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document record not found")
 
-        # Authorization check: Institution users can only download documents of their own institution
+        # Authorization check:
+        # 1. Institution users can only download documents of their own institution
         if actor.role == UserRole.INST_ADMIN.value:
             enforce_institution_scope(actor, doc.institution_id)
+        # 2. Regional officers/directors/EVC coordinators only for documents within assigned region
+        elif actor.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]:
+            if not actor.region_id or not doc.institution or doc.institution.region_id != actor.region_id:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied: Document outside assigned region")
+        # 3. Committee members only for documents linked to their assigned inspections
+        elif actor.role in [UserRole.COMMITTEE_MBR.value, UserRole.COMM_MEMBER.value]:
+            assigned_app_ids = [
+                row[0] for row in db.query(EVCVisit.application_id)
+                .join(EVCExpert)
+                .filter(EVCExpert.contact_email == actor.email)
+                .all()
+            ]
+            if not doc.application_id or doc.application_id not in assigned_app_ids:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied: Document outside assigned inspections")
 
         return storage_service.get_absolute_path(doc.file_path)
 

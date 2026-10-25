@@ -175,11 +175,41 @@
 
 ---
 
-## 8. Final Status and Deliverables Summary
-- **Backend**: FastAPI modular architecture with 12 API routers, 11 service domains, 41 passing automated tests.
+## 9. Role-Specific Dashboards & Strict Multi-Tenant Data Isolation (Delivered & Verified)
+- **Role-Specific Dashboard Workspaces**:
+  - Implemented tailored operational action queues in `backend/app/services/dashboard_service.py` under `role_view` for all 8 roles (`INST_ADMIN`, `RO_OFFICER`, `REGIONAL_DIR`, `EVC_COORD`, `COMM_MEMBER`/`COMMITTEE_MBR`, `COMP_REVIEW`/`COMP_REV`, `BO_OFFICER`/`BUREAU_OFFICER`, `COMP_AUTH`).
+  - Adapted `frontend/src/pages/DashboardPage.tsx`:
+    - `INST_ADMIN`: Action Center with Deficiency Notices requiring resubmission, Pending Compliance Undertakings countdowns, Prescribed Document Expiry Reminders, and My Applications tracking table. Zero regional workload table exposure.
+    - `RO_OFFICER` & `REGIONAL_DIR`: Regional Scrutiny Queue (with stage age days and return count), Deficiency Returns, SLA Deadlines, and single-region workload allocation.
+    - `EVC_COORD`: Awaiting Inspection Scheduling queue and Pending Inspection Reports queue.
+    - `COMM_MEMBER`: Assigned Inspection Visits and report submission tracker.
+    - `COMP_REVIEW`: Evidence Awaiting Verification queue with direct verification actions.
+    - `COMP_AUTH`: Council Statutory Decision Queue for SAC/SHC-recommended applications and recent council determinations.
+    - `BUREAU_OFFICER`: National operational summary and 5-region cross-regional workload oversight.
+- **Server-Side Data Scoping & Missing Scope Safety**:
+  - Implemented strict server-side scoping and missing scope safety across `applications.py`, `reports.py`, `compliance.py`, `documents.py`, `document_service.py`, `evc_service.py`, and `alert_service.py`.
+  - Added fail-safe protection: if a scoped role (`INST_ADMIN` or `RO_OFFICER`) lacks an `institution_id` or `region_id`, queries return 0 records (`false()`) rather than leaking unrestricted data.
+  - Restricted committee members strictly to applications, documents, compliance undertakings, and visits where their contact email is assigned.
+- **Role-Filtered Navigation**:
+  - Updated `frontend/src/components/Sidebar.tsx` to conditionally render navigation items based on the authenticated user's role.
+- **Automated Regression Test Suite**:
+  - Authored `backend/tests/test_role_dashboards_and_isolation.py` (6 tests) verifying institution isolation, single-region scoping, cross-regional authority views, committee member assignment checks, missing scope safety, and dashboard count consistency.
+  - Full suite expanded to 48 tests passing 100%.
+
+| Command Executed | Purpose | Result |
+|---|---|---|
+| `pytest backend/tests/test_role_dashboards_and_isolation.py` | Role dashboard & data isolation regression tests | Exit 0 (6 passed in 4.86s) |
+| `pytest -v backend/tests` | Run complete backend automated test suite | Exit 0 (48 passed in 27.55s) |
+| `npm run build --prefix frontend` | Compile production frontend bundle | Exit 0 (Success, 46.38s) |
+
+---
+
+## 10. Final Status and Deliverables Summary
+- **Backend**: FastAPI modular architecture with 12 API routers, 11 service domains, 48 passing automated tests.
 - **Frontend**: React 18, TypeScript, Tailwind CSS, Recharts, 14 production pages compiled to `dist/`.
 - **Database**: PostgreSQL / SQLite with 14 relational tables, foreign key constraints, indexes, and sequential cryptographic audit hash chaining.
 - **Statutory Safeguards**: Invariants INV-01, INV-02, INV-03 fully operational and tested.
+- **Role Dashboards**: Full 8-role tailored dashboards and strict multi-tenant server-enforced scoping.
 - **Demo Readiness**: 1-command reset script (`python backend/seed/reset_and_seed.py`), 8-role persona switcher, and comprehensive demo runbook (`docs/demo-script.md`).
-- **Project Completion**: 100% of all Milestones (M1 through M8) delivered and verified.
+
 
