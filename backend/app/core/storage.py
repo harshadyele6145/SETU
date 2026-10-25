@@ -64,6 +64,20 @@ class StorageService:
         content_type = upload_file.content_type or "application/octet-stream"
         return safe_filename, sha256_hash, total_size, content_type
 
+    def save_bytes(self, file_bytes: bytes, filename: str) -> Tuple[str, str, int, str]:
+        ext = self._validate_file_extension(filename)
+        if len(file_bytes) > self.max_size_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File size exceeds maximum permitted limit of {settings.MAX_UPLOAD_SIZE_MB}MB"
+            )
+        sha256_hash = hashlib.sha256(file_bytes).hexdigest()
+        safe_filename = f"{uuid.uuid4().hex}.{ext}"
+        target_path = os.path.join(self.base_dir, safe_filename)
+        with open(target_path, "wb") as f:
+            f.write(file_bytes)
+        return safe_filename, sha256_hash, len(file_bytes), "application/pdf"
+
     def get_absolute_path(self, rel_filename: str) -> str:
         # Prevent path traversal
         clean_name = os.path.basename(rel_filename)

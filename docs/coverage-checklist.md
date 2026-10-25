@@ -35,7 +35,7 @@
 - [x] Real frontend-to-backend functionality (no static mocks)
 - [x] Authoritative data persisted in database
 - [x] Backend-enforced authentication and record-level permissions
-- [ ] Dynamic dashboard metrics (zero hardcoded counts)
+- [x] Dynamic dashboard metrics (zero hardcoded counts)
 - [x] Evidence submission distinct from verification
 - [x] Cryptographic audit trail with SHA-256 hash chaining implemented
 - [x] Automated tests executed
@@ -49,7 +49,7 @@
 - [x] 8 RBAC roles implemented & tested
 - [x] Routes A, B, C, D workflow state machine
 - [x] Deadline calculations & timezone handling (`Asia/Kolkata`)
-- [ ] EVC Management (queues, scheduling, completion, report tracking)
+- [x] EVC Management (queues, scheduling, completion, report tracking)
 - [x] Compliance & undertakings lifecycle
 - [x] Document registry, lease validity, renewal & version history
 - [x] Alert service, multi-channel simulation, idempotency, downtime recovery

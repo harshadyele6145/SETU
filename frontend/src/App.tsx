@@ -9,6 +9,8 @@ import { ApplicationsPage } from './pages/ApplicationsPage';
 import { TimelinePage } from './pages/TimelinePage';
 import { CompliancePage } from './pages/CompliancePage';
 import { DocumentsPage } from './pages/DocumentsPage';
+import { EVCManagementPage } from './pages/EVCManagementPage';
+import { ReportsPage } from './pages/ReportsPage';
 import { AlertsPage } from './pages/AlertsPage';
 import { NotificationRecoveryPage } from './pages/NotificationRecoveryPage';
 import { AuditTrailPage } from './pages/AuditTrailPage';
@@ -29,11 +31,11 @@ export const App: React.FC = () => {
                   <Route path="/" element={<DashboardPage />} />
                   <Route path="/applications" element={<ApplicationsPage />} />
                   <Route path="/timeline" element={<TimelinePage />} />
-                  <Route path="/evc" element={<GenericModulePage title="Expert Visit Committee (EVC) Management" moduleKey="evc" />} />
+                  <Route path="/evc" element={<EVCManagementPage />} />
                   <Route path="/compliance" element={<CompliancePage />} />
                   <Route path="/documents" element={<DocumentsPage />} />
                   <Route path="/alerts" element={<AlertsPage />} />
-                  <Route path="/reports" element={<GenericModulePage title="Reports & Pendency Analytics" moduleKey="reports" />} />
+                  <Route path="/reports" element={<ReportsPage />} />
                   <Route path="/audit" element={<AuditTrailPage />} />
                   <Route path="/rules" element={<GenericModulePage title="Approval Process Handbook (APH) Workflow Rules" moduleKey="rules" />} />
                   <Route path="/users" element={<GenericModulePage title="User & Access Scope Administration" moduleKey="users" />} />

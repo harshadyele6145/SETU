@@ -80,14 +80,40 @@
 - **Scope-Enforced Alert Inbox**: Institutions only see and acknowledge alerts belonging to their institution; officers see regional or national alerts; cross-institution acknowledgments are strictly rejected with HTTP 403.
 - **Frontend Pages**: Complete UI implementations in `frontend/src/pages/AlertsPage.tsx` and `frontend/src/pages/NotificationRecoveryPage.tsx`.
 
+| `pytest backend/tests/test_evc.py backend/tests/test_dashboard.py` | Test EVC workflow, dynamic dashboard metrics & CSV export | Exit 0 (4 passed in 3.57s) |
+| `pytest backend/tests/test_p0_mandatory_gate.py` | Run Mandatory P0 End-to-End Gate verification | Exit 0 (1 passed in 1.84s) |
+| `pytest` | Run full test suite (Milestone 6) | Exit 0 (33 passed in 24.37s) |
+| `npm run build --prefix frontend` | Compile production frontend bundle (Milestone 6) | Exit 0 (Success, 14.52s) |
+
 ---
 
-## 5. Known Defects & Limitations
-- Full EVC expert coordination workflow (scheduling roster, conflict checks, report uploads) is scheduled for Milestone 6.
-- Live dashboard metrics and authorized CSV exports are scheduled for Milestone 6.
+## 4. Milestone 5 Completed: Deadline and Alert Engine (P0)
+- **DeadlineService**: Calculation of application stage age, business days (skipping weekends and Gazetted Indian holidays), remaining time to SLA, compliance due dates, and document validity expirations.
+- **Idempotency Guarantee**: Compound idempotency keys (`f"{entity_type}:{entity_id}:{alert_type}:{window_day}"`) prevent duplicate alerts on repeated evaluator runs. Verified in automated test.
+- **Transactional Notification Outbox**: Enqueues alerts for email simulation and in-app feeds (`NotificationOutbox`).
+- **Retry Mechanism & Failure Handling**: Automatic retries with exponential backoff and max retry threshold (3 attempts); failures transition to `FAILED` with explicit error diagnostics.
+- **Downtime Recovery Simulator**: Evaluates active dataset against simulated future timestamps, catching up on all missed alert windows idempotently without creating duplicate records.
+- **Scope-Enforced Alert Inbox**: Institutions only see and acknowledge alerts belonging to their institution; officers see regional or national alerts; cross-institution acknowledgments are strictly rejected with HTTP 403.
+- **Frontend Pages**: Complete UI implementations in `frontend/src/pages/AlertsPage.tsx` and `frontend/src/pages/NotificationRecoveryPage.tsx`.
 
 ---
 
-## 6. Next Steps
-- Execute Milestone 6: EVC Management & Real-Time Operational Dashboard (P1).
+## 5. Milestone 6 Completed: EVC Management & Real-Time Operational Dashboard (P1)
+- **EVCService**: Physical campus inspection lifecycle: visit scheduling, confirmed dates, expert roster assignment (`EVCExpert`), and signed report submission with SHA-256 integrity verification.
+- **Mandatory Delay Logging**: Rescheduling strictly rejects empty or whitespace justifications with HTTP 400; reasons are stored and immutably recorded in the cryptographic audit trail.
+- **DashboardService**: Real-time aggregation directly against PostgreSQL/SQLite with zero hardcoded metrics.
+  - KPI cards: total applications, active in-flight, critical SLA breaches, compliance health, and document expiry countdowns.
+  - Interactive Recharts visualizations: Route breakdown pie chart, pipeline stage distribution bar chart, and regional workload allocation.
+- **ReportsService**: Granular stage age calculations and responsibility classification (`INSTITUTION` vs `AICTE_INTERNAL`). Direct CSV export with strict record-level scoping.
+- **Frontend Pages**: Complete UI implementations in `frontend/src/pages/EVCManagementPage.tsx`, `frontend/src/pages/DashboardPage.tsx`, and `frontend/src/pages/ReportsPage.tsx`.
+
+---
+
+## 6. Known Defects & Limitations
+- Innovation engines (Explainable Attention Engine & Bottleneck Exception Cockpit) are scheduled for Milestone 7.
+
+---
+
+## 7. Next Steps
+- Execute Milestone 7: Core Innovation Engines — Explainable Attention Engine (Priority Multi-Factor Queue), Bottleneck & Exception Cockpit, and Compliance Dependency Graph (P1 & P2).
 

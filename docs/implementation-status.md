@@ -17,8 +17,8 @@
 | Compliance Obligations & Evidence | Milestone 4 | VERIFIED & DONE | `backend/app/services/compliance_service.py`, `backend/tests/test_compliance.py` (3 passed) |
 | Document Registry & Expiry Tracking | Milestone 4 | VERIFIED & DONE | `backend/app/services/document_service.py`, `backend/tests/test_documents.py` (2 passed) |
 | Deadline Evaluator & Alerts Engine | Milestone 5 | VERIFIED & DONE | `backend/app/services/deadline_service.py`, `backend/app/services/alert_service.py`, `backend/tests/test_alerts.py` (7 passed) |
-| EVC Management & Report Tracking | Milestone 6 | PLANNED | Workflow designed |
-| Live Dashboard & Reporting | Milestone 6 | PLANNED | UI & API designed |
+| EVC Management & Report Tracking | Milestone 6 | VERIFIED & DONE | `backend/app/services/evc_service.py`, `backend/tests/test_evc.py` (2 passed) |
+| Live Dashboard & Reporting | Milestone 6 | VERIFIED & DONE | `backend/app/services/dashboard_service.py`, `backend/app/api/reports.py`, `backend/tests/test_dashboard.py` (2 passed) |
 | Explainable Attention Engine (P1) | Milestone 7 | PLANNED | Scoring algorithm designed |
 | Bottleneck & Exception Cockpit (P1) | Milestone 7 | PLANNED | Classifier designed |
 | End-to-End Validation & Fallback Script | Milestone 8 | PLANNED | Script outline planned |
