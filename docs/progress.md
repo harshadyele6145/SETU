@@ -54,6 +54,11 @@
 | `pytest` | Run full test suite (Milestone 4) | Exit 0 (21 passed in 11.06s) |
 | `npm run build --prefix frontend` | Compile production frontend bundle (Milestone 4) | Exit 0 (Success, dist generated) |
 
+| `pytest backend/tests/test_deadlines.py backend/tests/test_alerts.py` | Test deadline calculator & idempotent alert engine | Exit 0 (7 passed in 5.82s) |
+| `pytest` | Run full test suite (Milestone 5) | Exit 0 (28 passed in 20.95s) |
+| `npm run build --prefix frontend` | Compile production frontend bundle (Milestone 5) | Exit 0 (Success, 7.54s) |
+| `python backend/seed/reset_and_seed.py` | Reset DB and seed 26 apps + 35 alerts | Exit 0 (Success, 35 alerts, hash chain verified) |
+
 ---
 
 ## 3. Milestone 4 Completed: Compliance Obligations & Document Registry (P0)
@@ -66,12 +71,23 @@
 
 ---
 
-## 4. Known Defects & Limitations
-- Automated alert generation (windows: 30, 15, 7, 1 day, overdue) and escalation queue are queued for Milestone 5.
-- Full EVC expert coordination workflow is scheduled for Milestone 6.
+## 4. Milestone 5 Completed: Deadline and Alert Engine (P0)
+- **DeadlineService**: Calculation of application stage age, business days (skipping weekends and Gazetted Indian holidays), remaining time to SLA, compliance due dates, and document validity expirations.
+- **Idempotency Guarantee**: Compound idempotency keys (`f"{entity_type}:{entity_id}:{alert_type}:{window_day}"`) prevent duplicate alerts on repeated evaluator runs. Verified in automated test.
+- **Transactional Notification Outbox**: Enqueues alerts for email simulation and in-app feeds (`NotificationOutbox`).
+- **Retry Mechanism & Failure Handling**: Automatic retries with exponential backoff and max retry threshold (3 attempts); failures transition to `FAILED` with explicit error diagnostics.
+- **Downtime Recovery Simulator**: Evaluates active dataset against simulated future timestamps, catching up on all missed alert windows idempotently without creating duplicate records.
+- **Scope-Enforced Alert Inbox**: Institutions only see and acknowledge alerts belonging to their institution; officers see regional or national alerts; cross-institution acknowledgments are strictly rejected with HTTP 403.
+- **Frontend Pages**: Complete UI implementations in `frontend/src/pages/AlertsPage.tsx` and `frontend/src/pages/NotificationRecoveryPage.tsx`.
 
 ---
 
-## 5. Next Steps
-- Execute Milestone 5: Implement Deadline and Alert Engine (P0), compound idempotency, downtime catch-up, notification outbox, and escalation management.
+## 5. Known Defects & Limitations
+- Full EVC expert coordination workflow (scheduling roster, conflict checks, report uploads) is scheduled for Milestone 6.
+- Live dashboard metrics and authorized CSV exports are scheduled for Milestone 6.
+
+---
+
+## 6. Next Steps
+- Execute Milestone 6: EVC Management & Real-Time Operational Dashboard (P1).
 

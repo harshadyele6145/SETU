@@ -19,7 +19,7 @@ from backend.app.models.notification import NotificationOutbox
 from backend.app.services.audit_service import audit_service
 
 
-def seed_database(db_session=None):
+def seed_database(db_session=None, generate_alerts: bool = False):
     print("Beginning SETU Synthetic Database Seeding...")
     close_db_at_end = False
     if db_session is None:
@@ -411,6 +411,13 @@ def seed_database(db_session=None):
         )
 
         db.commit()
+
+        # Trigger deadline evaluation to populate alerts and notification outbox if requested
+        if generate_alerts:
+            from backend.app.services.alert_service import AlertService
+            eval_summary = AlertService.evaluate_and_generate_alerts(db)
+            print(f"Generated {eval_summary['new_alerts_created']} Alerts ({eval_summary['notifications_enqueued']} Notifications enqueued).")
+
         print("SETU Database Seeding completed successfully!")
 
     except Exception as e:

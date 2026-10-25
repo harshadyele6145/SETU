@@ -9,6 +9,8 @@ import { ApplicationsPage } from './pages/ApplicationsPage';
 import { TimelinePage } from './pages/TimelinePage';
 import { CompliancePage } from './pages/CompliancePage';
 import { DocumentsPage } from './pages/DocumentsPage';
+import { AlertsPage } from './pages/AlertsPage';
+import { NotificationRecoveryPage } from './pages/NotificationRecoveryPage';
 import { AuditTrailPage } from './pages/AuditTrailPage';
 import { GenericModulePage } from './pages/GenericModulePage';
 
@@ -30,12 +32,12 @@ export const App: React.FC = () => {
                   <Route path="/evc" element={<GenericModulePage title="Expert Visit Committee (EVC) Management" moduleKey="evc" />} />
                   <Route path="/compliance" element={<CompliancePage />} />
                   <Route path="/documents" element={<DocumentsPage />} />
-                  <Route path="/alerts" element={<GenericModulePage title="Alerts & Escalations" moduleKey="alerts" />} />
+                  <Route path="/alerts" element={<AlertsPage />} />
                   <Route path="/reports" element={<GenericModulePage title="Reports & Pendency Analytics" moduleKey="reports" />} />
                   <Route path="/audit" element={<AuditTrailPage />} />
                   <Route path="/rules" element={<GenericModulePage title="Approval Process Handbook (APH) Workflow Rules" moduleKey="rules" />} />
                   <Route path="/users" element={<GenericModulePage title="User & Access Scope Administration" moduleKey="users" />} />
-                  <Route path="/notifications-recovery" element={<GenericModulePage title="Notification Failures & Downtime Recovery" moduleKey="notifications" />} />
+                  <Route path="/notifications-recovery" element={<NotificationRecoveryPage />} />
                   <Route path="/integration" element={<GenericModulePage title="AICTE External Portal Integration Monitor" moduleKey="integration" />} />
                   <Route path="/attention" element={<GenericModulePage title="Explainable Attention Engine (Priority Queue)" moduleKey="attention" />} />
                   <Route path="/bottlenecks" element={<GenericModulePage title="Bottleneck & Exception Cockpit" moduleKey="bottlenecks" />} />

@@ -16,7 +16,7 @@
 | Applications & Timeline UI Pages | Milestone 3 | VERIFIED & DONE | `frontend/src/pages/ApplicationsPage.tsx`, `frontend/src/pages/TimelinePage.tsx` |
 | Compliance Obligations & Evidence | Milestone 4 | VERIFIED & DONE | `backend/app/services/compliance_service.py`, `backend/tests/test_compliance.py` (3 passed) |
 | Document Registry & Expiry Tracking | Milestone 4 | VERIFIED & DONE | `backend/app/services/document_service.py`, `backend/tests/test_documents.py` (2 passed) |
-| Deadline Evaluator & Alerts Engine | Milestone 5 | PLANNED | Logic designed |
+| Deadline Evaluator & Alerts Engine | Milestone 5 | VERIFIED & DONE | `backend/app/services/deadline_service.py`, `backend/app/services/alert_service.py`, `backend/tests/test_alerts.py` (7 passed) |
 | EVC Management & Report Tracking | Milestone 6 | PLANNED | Workflow designed |
 | Live Dashboard & Reporting | Milestone 6 | PLANNED | UI & API designed |
 | Explainable Attention Engine (P1) | Milestone 7 | PLANNED | Scoring algorithm designed |

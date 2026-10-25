@@ -27,7 +27,7 @@
 - [x] Frontend: React + TypeScript + Vite + Tailwind CSS + Lucide + Recharts
 - [x] Backend: FastAPI + Pydantic v2 + SQLAlchemy 2.0 + Alembic + Pytest
 - [x] Database: PostgreSQL schema + SQLite local engine + UUIDs + timezone-aware timestamps
-- [ ] Scheduler: Lightweight background worker for deadline evaluation & alert generation
+- [x] Scheduler: Lightweight background worker for deadline evaluation & alert generation
 - [x] Storage abstraction: Protected local storage, SHA-256 checksums, size and type validation
 - [x] Dockerfiles & docker-compose.yml
 
@@ -48,11 +48,11 @@
 ## Parts 6 to 12 — Core Modules (P0)
 - [x] 8 RBAC roles implemented & tested
 - [x] Routes A, B, C, D workflow state machine
-- [ ] Deadline calculations & timezone handling (`Asia/Kolkata`)
+- [x] Deadline calculations & timezone handling (`Asia/Kolkata`)
 - [ ] EVC Management (queues, scheduling, completion, report tracking)
 - [x] Compliance & undertakings lifecycle
 - [x] Document registry, lease validity, renewal & version history
-- [ ] Alert service, multi-channel simulation, idempotency, downtime recovery
+- [x] Alert service, multi-channel simulation, idempotency, downtime recovery
 
 ## Part 13 — Innovations (P1 & P2)
 - [ ] Explainable Attention Engine (deterministic multi-factor scoring)

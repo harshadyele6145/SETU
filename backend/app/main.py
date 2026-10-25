@@ -10,6 +10,7 @@ from backend.app.api.auth import router as auth_router
 from backend.app.api.applications import router as applications_router
 from backend.app.api.compliance import router as compliance_router
 from backend.app.api.documents import router as documents_router
+from backend.app.api.alerts import router as alerts_router
 from backend.app.api.audit import router as audit_router
 
 
@@ -45,6 +46,7 @@ app.include_router(auth_router)
 app.include_router(applications_router)
 app.include_router(compliance_router)
 app.include_router(documents_router)
+app.include_router(alerts_router)
 app.include_router(audit_router)
 
 

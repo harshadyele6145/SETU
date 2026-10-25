@@ -26,7 +26,7 @@ def reset_and_seed():
     print("\nRunning synthetic database seeding...")
     db = SessionLocal()
     try:
-        seed_database(db)
+        seed_database(db, generate_alerts=True)
         is_valid, count, broken_seq, msg = audit_service.verify_chain(db)
         print(f"\nCryptographic Audit Trail Verification: {msg} (Verified {count} events)")
     finally:
