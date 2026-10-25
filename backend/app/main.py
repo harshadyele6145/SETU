@@ -17,6 +17,8 @@ from backend.app.api.reports import router as reports_router
 from backend.app.api.attention import router as attention_router
 from backend.app.api.bottlenecks import router as bottlenecks_router
 from backend.app.api.audit import router as audit_router
+from backend.app.api.integrations import router as integrations_router
+from backend.app.api.users import router as users_router
 
 
 @asynccontextmanager
@@ -58,6 +60,8 @@ app.include_router(reports_router)
 app.include_router(attention_router)
 app.include_router(bottlenecks_router)
 app.include_router(audit_router)
+app.include_router(integrations_router)
+app.include_router(users_router)
 
 
 @app.get("/")

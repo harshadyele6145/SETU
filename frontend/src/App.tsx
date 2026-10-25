@@ -18,7 +18,8 @@ import { AttentionQueuePage } from './pages/AttentionQueuePage';
 import { BottleneckCockpitPage } from './pages/BottleneckCockpitPage';
 import { WorkflowRulesPage } from './pages/WorkflowRulesPage';
 import { ComplianceDependenciesPage } from './pages/ComplianceDependenciesPage';
-import { GenericModulePage } from './pages/GenericModulePage';
+import { IntegrationMonitorPage } from './pages/IntegrationMonitorPage';
+import { UserAdminPage } from './pages/UserAdminPage';
 
 export const App: React.FC = () => {
   return (
@@ -42,9 +43,9 @@ export const App: React.FC = () => {
                   <Route path="/reports" element={<ReportsPage />} />
                   <Route path="/audit" element={<AuditTrailPage />} />
                   <Route path="/rules" element={<WorkflowRulesPage />} />
-                  <Route path="/users" element={<GenericModulePage title="User & Access Scope Administration" moduleKey="users" />} />
+                  <Route path="/users" element={<UserAdminPage />} />
                   <Route path="/notifications-recovery" element={<NotificationRecoveryPage />} />
-                  <Route path="/integration" element={<GenericModulePage title="AICTE External Portal Integration Monitor" moduleKey="integration" />} />
+                  <Route path="/integration" element={<IntegrationMonitorPage />} />
                   <Route path="/attention" element={<AttentionQueuePage />} />
                   <Route path="/bottlenecks" element={<BottleneckCockpitPage />} />
                   <Route path="/dependencies" element={<ComplianceDependenciesPage />} />

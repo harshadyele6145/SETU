@@ -4,11 +4,11 @@
 - [x] Preserved problem statement working spec and checked official SIH portal
 - [x] Initial documentation created (research, rules, requirements, traceability, coverage)
 - [x] Milestone 1 Foundation completed and verified
-- [ ] P0 Foundation implementation and automated tests
-- [ ] P0 Mandatory end-to-end gate verified
-- [ ] P1 Operational demonstration & core innovations (Attention Engine, Bottleneck Cockpit)
-- [ ] P2 Innovations (Dependency View, Case Summary, Adapter)
-- [ ] Demo-day fallback script (`docs/demo-script.md`) and recording checklist
+- [x] P0 Foundation implementation and automated tests
+- [x] P0 Mandatory end-to-end gate verified
+- [x] P1 Operational demonstration & core innovations (Attention Engine, Bottleneck Cockpit)
+- [x] P2 Innovations (Dependency View, Case Summary, Adapter)
+- [x] Demo-day fallback script (`docs/demo-script.md`) and recording checklist (`docs/demo-recording-checklist.md`)
 
 ## Part 1 — Project Identity
 - [x] System name: SETU (AICTE Approval Operations Platform)
@@ -22,6 +22,7 @@
 - [x] `docs/regulatory-rules-register.md` created with source classifications
 - [x] `docs/integration-plan.md` created
 - [x] `ExternalPortalAdapter` interface & `MockPortalAdapter` implemented
+- [x] `backend/app/api/integrations.py` & `frontend/src/pages/IntegrationMonitorPage.tsx` operational with outage simulation
 
 ## Part 3 — Technical Stack
 - [x] Frontend: React + TypeScript + Vite + Tailwind CSS + Lucide + Recharts
@@ -36,17 +37,17 @@
 - [x] Authoritative data persisted in database
 - [x] Backend-enforced authentication and record-level permissions
 - [x] Dynamic dashboard metrics (zero hardcoded counts)
-- [x] Evidence submission distinct from verification
-- [x] Cryptographic audit trail with SHA-256 hash chaining implemented
-- [x] Automated tests executed
+- [x] Evidence submission distinct from verification (INV-01)
+- [x] Cryptographic audit trail with SHA-256 hash chaining implemented & verified
+- [x] Automated tests executed (41 tests passing)
 
 ## Part 5 — Navigation & Design
 - [x] All 15 functional navigation items implemented
 - [x] Navy & teal government-enterprise design
-- [ ] WCAG 2.1 AA / GIGW accessibility considerations
+- [x] WCAG 2.1 AA / GIGW 3.0 accessibility verification report (`docs/accessibility-report.md`)
 
 ## Parts 6 to 12 — Core Modules (P0)
-- [x] 8 RBAC roles implemented & tested
+- [x] 8 RBAC roles implemented & tested (`UserAdminPage.tsx` + 1-click persona switcher)
 - [x] Routes A, B, C, D workflow state machine
 - [x] Deadline calculations & timezone handling (`Asia/Kolkata`)
 - [x] EVC Management (queues, scheduling, completion, report tracking)
@@ -58,12 +59,14 @@
 - [x] Explainable Attention Engine (deterministic multi-factor scoring)
 - [x] Bottleneck & Exception Cockpit (isolating AICTE vs. Institution delays)
 - [x] Compliance Dependency View (full relationship navigation)
-- [x] Explainable Case Summarizer
+- [x] Explainable Case Summarizer (5-question operational briefing)
 
 ## Parts 14 to 20 — Data, Quality & Security
-- [x] Deterministic synthetic seed data (10+ institutions, 25+ applications, 12+ obligations)
-- [x] One-command reset-and-seed script
-- [x] Pytest suite covering auth, scopes, transitions, deadlines, alerts, and hash-chain
-- [ ] Local backup and restore script tested
-- [ ] Security test results and documentation
+- [x] Deterministic synthetic seed data (10 institutions, 26 applications, 13 obligations, 10 documents, 35 alerts)
+- [x] One-command reset-and-seed script (`python backend/seed/reset_and_seed.py`)
+- [x] Pytest suite covering auth, scopes, transitions, deadlines, alerts, hash-chain, backup-restore, integrations (41 passed)
+- [x] Local backup and restore script tested (`backend/storage/backup_restore.py` & `docs/backup-restore.md`)
+- [x] Security test results and documentation (`docs/security-test-results.md`)
+- [x] Electronic records retention runbook (`docs/records-and-retention.md`)
+- [x] Production hardening architecture (`docs/production-hardening.md`)
 
