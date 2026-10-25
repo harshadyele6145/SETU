@@ -55,15 +55,15 @@
 - [x] Alert service, multi-channel simulation, idempotency, downtime recovery
 
 ## Part 13 — Innovations (P1 & P2)
-- [ ] Explainable Attention Engine (deterministic multi-factor scoring)
-- [ ] Bottleneck & Exception Cockpit (isolating AICTE vs. Institution delays)
-- [ ] Compliance Dependency View (full relationship navigation)
-- [ ] Explainable Case Summarizer
+- [x] Explainable Attention Engine (deterministic multi-factor scoring)
+- [x] Bottleneck & Exception Cockpit (isolating AICTE vs. Institution delays)
+- [x] Compliance Dependency View (full relationship navigation)
+- [x] Explainable Case Summarizer
 
 ## Parts 14 to 20 — Data, Quality & Security
-- [ ] Deterministic synthetic seed data (10+ institutions, 25+ applications, 12+ obligations)
-- [ ] One-command reset-and-seed script
-- [ ] Pytest suite covering auth, scopes, transitions, deadlines, alerts, and hash-chain
+- [x] Deterministic synthetic seed data (10+ institutions, 25+ applications, 12+ obligations)
+- [x] One-command reset-and-seed script
+- [x] Pytest suite covering auth, scopes, transitions, deadlines, alerts, and hash-chain
 - [ ] Local backup and restore script tested
 - [ ] Security test results and documentation
 

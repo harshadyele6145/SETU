@@ -19,8 +19,8 @@
 | Deadline Evaluator & Alerts Engine | Milestone 5 | VERIFIED & DONE | `backend/app/services/deadline_service.py`, `backend/app/services/alert_service.py`, `backend/tests/test_alerts.py` (7 passed) |
 | EVC Management & Report Tracking | Milestone 6 | VERIFIED & DONE | `backend/app/services/evc_service.py`, `backend/tests/test_evc.py` (2 passed) |
 | Live Dashboard & Reporting | Milestone 6 | VERIFIED & DONE | `backend/app/services/dashboard_service.py`, `backend/app/api/reports.py`, `backend/tests/test_dashboard.py` (2 passed) |
-| Explainable Attention Engine (P1) | Milestone 7 | PLANNED | Scoring algorithm designed |
-| Bottleneck & Exception Cockpit (P1) | Milestone 7 | PLANNED | Classifier designed |
+| Explainable Attention Engine (P1) | Milestone 7 | VERIFIED & DONE | `backend/app/services/attention_service.py`, `backend/tests/test_attention_engine.py` (2 passed) |
+| Bottleneck & Exception Cockpit (P1) | Milestone 7 | VERIFIED & DONE | `backend/app/services/bottleneck_service.py`, `backend/tests/test_bottlenecks.py` (2 passed) |
 | End-to-End Validation & Fallback Script | Milestone 8 | PLANNED | Script outline planned |
 
 *Legend: PLANNED -> IN PROGRESS -> IMPLEMENTED -> TESTED -> VERIFIED & DONE*

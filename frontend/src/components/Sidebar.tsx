@@ -36,6 +36,7 @@ export const navItems = [
   { name: 'User & Access Admin', path: '/users', icon: Users },
   { name: 'Notification Failures', path: '/notifications-recovery', icon: AlertOctagon },
   { name: 'Integration Monitor', path: '/integration', icon: Network },
+  { name: 'Compliance Dependencies', path: '/dependencies', icon: GitCommit, badge: 'P2 Depth' },
   { name: 'Attention Queue', path: '/attention', icon: Zap, badge: 'P1 Innovation' },
   { name: 'Bottleneck Cockpit', path: '/bottlenecks', icon: Gauge, badge: 'P1 Innovation' },
 ];

@@ -14,6 +14,10 @@ import { ReportsPage } from './pages/ReportsPage';
 import { AlertsPage } from './pages/AlertsPage';
 import { NotificationRecoveryPage } from './pages/NotificationRecoveryPage';
 import { AuditTrailPage } from './pages/AuditTrailPage';
+import { AttentionQueuePage } from './pages/AttentionQueuePage';
+import { BottleneckCockpitPage } from './pages/BottleneckCockpitPage';
+import { WorkflowRulesPage } from './pages/WorkflowRulesPage';
+import { ComplianceDependenciesPage } from './pages/ComplianceDependenciesPage';
 import { GenericModulePage } from './pages/GenericModulePage';
 
 export const App: React.FC = () => {
@@ -37,12 +41,13 @@ export const App: React.FC = () => {
                   <Route path="/alerts" element={<AlertsPage />} />
                   <Route path="/reports" element={<ReportsPage />} />
                   <Route path="/audit" element={<AuditTrailPage />} />
-                  <Route path="/rules" element={<GenericModulePage title="Approval Process Handbook (APH) Workflow Rules" moduleKey="rules" />} />
+                  <Route path="/rules" element={<WorkflowRulesPage />} />
                   <Route path="/users" element={<GenericModulePage title="User & Access Scope Administration" moduleKey="users" />} />
                   <Route path="/notifications-recovery" element={<NotificationRecoveryPage />} />
                   <Route path="/integration" element={<GenericModulePage title="AICTE External Portal Integration Monitor" moduleKey="integration" />} />
-                  <Route path="/attention" element={<GenericModulePage title="Explainable Attention Engine (Priority Queue)" moduleKey="attention" />} />
-                  <Route path="/bottlenecks" element={<GenericModulePage title="Bottleneck & Exception Cockpit" moduleKey="bottlenecks" />} />
+                  <Route path="/attention" element={<AttentionQueuePage />} />
+                  <Route path="/bottlenecks" element={<BottleneckCockpitPage />} />
+                  <Route path="/dependencies" element={<ComplianceDependenciesPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </main>

@@ -107,13 +107,45 @@
 - **ReportsService**: Granular stage age calculations and responsibility classification (`INSTITUTION` vs `AICTE_INTERNAL`). Direct CSV export with strict record-level scoping.
 - **Frontend Pages**: Complete UI implementations in `frontend/src/pages/EVCManagementPage.tsx`, `frontend/src/pages/DashboardPage.tsx`, and `frontend/src/pages/ReportsPage.tsx`.
 
+| `pytest backend/tests/test_attention_engine.py backend/tests/test_bottlenecks.py` | Test Attention Engine scoring, 5-question summary, and bottleneck triage | Exit 0 (4 passed in 5.12s) |
+| `pytest` | Run complete test suite (Milestone 7) | Exit 0 (37 passed in 35.36s) |
+| `npm run build --prefix frontend` | Compile production frontend bundle (Milestone 7) | Exit 0 (Success, 15.50s) |
+
 ---
 
-## 6. Known Defects & Limitations
-- Innovation engines (Explainable Attention Engine & Bottleneck Exception Cockpit) are scheduled for Milestone 7.
+## 5. Milestone 6 Completed: EVC Management & Real-Time Operational Dashboard (P1)
+- **EVCService**: Physical campus inspection lifecycle: visit scheduling, confirmed dates, expert roster assignment (`EVCExpert`), and signed report submission with SHA-256 integrity verification.
+- **Mandatory Delay Logging**: Rescheduling strictly rejects empty or whitespace justifications with HTTP 400; reasons are stored and immutably recorded in the cryptographic audit trail.
+- **DashboardService**: Real-time aggregation directly against PostgreSQL/SQLite with zero hardcoded metrics.
+  - KPI cards: total applications, active in-flight, critical SLA breaches, compliance health, and document expiry countdowns.
+  - Interactive Recharts visualizations: Route breakdown pie chart, pipeline stage distribution bar chart, and regional workload allocation.
+- **ReportsService**: Granular stage age calculations and responsibility classification (`INSTITUTION` vs `AICTE_INTERNAL`). Direct CSV export with strict record-level scoping.
+- **Frontend Pages**: Complete UI implementations in `frontend/src/pages/EVCManagementPage.tsx`, `frontend/src/pages/DashboardPage.tsx`, and `frontend/src/pages/ReportsPage.tsx`.
 
 ---
 
-## 7. Next Steps
-- Execute Milestone 7: Core Innovation Engines — Explainable Attention Engine (Priority Multi-Factor Queue), Bottleneck & Exception Cockpit, and Compliance Dependency Graph (P1 & P2).
+## 6. Milestone 7 Completed: Core Innovation Engines (P1 & P2 Depth)
+- **Explainable Attention Engine (Innovation A)**:
+  - Deterministic multi-factor scoring formula combining SLA urgency/breach (40%), chronic deficiency returns (20%), overdue compliance undertakings (20%), expired deeds/NOCs (15%), unscheduled EVC visits (15%), and unassigned case officers (10%).
+  - Transparent diagnostic explanations with individual factor points breakdown.
+  - Prescriptive recommended actions and responsible RBAC role identification.
+  - 5-Question structured case summary answering the core operational questions.
+- **Bottleneck & Exception Cockpit (Innovation C)**:
+  - Automated triage separating stalled items into "Waiting on Institution" vs "Waiting on AICTE Internal".
+  - Age in state, threshold breach countdown, holding party, and next permissible bypass action.
+- **Compliance Dependency Navigator (P2)**:
+  - Full relational graph connecting Institution &rarr; Applications &rarr; Conditions Precedent &rarr; Prescribed Deeds.
+- **Workflow Rules Interactive Browser**:
+  - Full regulatory guide for Routes A, B, C, D with APH Chapter references and statutory invariants (`INV-01`, `INV-02`, `INV-03`).
+- **Frontend Pages**: Complete UI implementations in `frontend/src/pages/AttentionQueuePage.tsx`, `frontend/src/pages/BottleneckCockpitPage.tsx`, `frontend/src/pages/WorkflowRulesPage.tsx`, and `frontend/src/pages/ComplianceDependenciesPage.tsx`.
+
+---
+
+## 7. Known Defects & Limitations
+- Final end-to-end demo scripts, backup-restore automation, accessibility verification, and SIH presentation artifacts are scheduled for Milestone 8.
+
+---
+
+## 8. Next Steps
+- Execute Milestone 8: End-to-End Validation, Demo Script, Accessibility Verification, and Final Packaging.
 

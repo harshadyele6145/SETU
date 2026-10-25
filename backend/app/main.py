@@ -14,6 +14,8 @@ from backend.app.api.alerts import router as alerts_router
 from backend.app.api.evc import router as evc_router
 from backend.app.api.dashboard import router as dashboard_router
 from backend.app.api.reports import router as reports_router
+from backend.app.api.attention import router as attention_router
+from backend.app.api.bottlenecks import router as bottlenecks_router
 from backend.app.api.audit import router as audit_router
 
 
@@ -53,6 +55,8 @@ app.include_router(alerts_router)
 app.include_router(evc_router)
 app.include_router(dashboard_router)
 app.include_router(reports_router)
+app.include_router(attention_router)
+app.include_router(bottlenecks_router)
 app.include_router(audit_router)
 
 
