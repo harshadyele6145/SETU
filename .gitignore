@@ -1,0 +1,41 @@
+# Environments and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node & Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Database & Storage
+*.db
+*.sqlite
+*.sqlite3
+backend/storage/uploads/*
+!backend/storage/uploads/.gitkeep
+backend/storage/backups/*
+!backend/storage/backups/.gitkeep
+
+# Operating system
+.DS_Store
+Thumbs.db
