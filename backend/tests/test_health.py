@@ -17,3 +17,4 @@ def test_health_endpoints(client: TestClient):
         data = response.json()
         assert data["status"] in ["healthy", "degraded"]
         assert data["database_connected"] is True
+

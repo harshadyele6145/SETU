@@ -52,3 +52,4 @@ class BottleneckSummary(BaseModel):
     overdue_count: int
     critical_escalations: int
     items: List[BottleneckItem]
+

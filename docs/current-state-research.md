@@ -75,3 +75,4 @@ Under APH provisions, different application types trigger distinct evaluation pi
 | Bottleneck Detection | Retrospective statistical reporting | **Bottleneck & Exception Cockpit** isolating delay causes and holding parties | **INNOVATION (P1)** |
 | Traceability & Tamper Detection | Relational database logging | Append-only audit events with cryptographic SHA-256 hash chaining | **ENGINEERING PILLAR** |
 | AICTE Live Integration | Dedicated internal databases and legacy portals | Modular `ExternalPortalAdapter` with robust `MockPortalAdapter` for prototype | **INTEGRATION BOUNDARY** |
+

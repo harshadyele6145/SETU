@@ -42,3 +42,4 @@ export const GenericModulePage: React.FC<GenericModulePageProps> = ({ title, mod
     </div>
   );
 };
+

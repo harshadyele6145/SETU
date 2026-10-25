@@ -49,15 +49,29 @@
 |---|---|---|
 | `python backend/seed/reset_and_seed.py` | Reset DB and seed 26 applications | Exit 0 (Success, 26 apps seeded) |
 | `pytest backend/tests/test_workflow.py backend/tests/test_audit_hashchain.py` | Test workflow transitions & audit chain | Exit 0 (6 passed in 4.79s) |
-| `pytest` | Run full test suite | Exit 0 (16 passed in 6.83s) |
-| `npm run build --prefix frontend` | Compile production frontend bundle | Exit 0 (Success, 4.50s) |
+| `pytest` | Run full test suite (Milestone 3) | Exit 0 (16 passed in 6.83s) |
+| `pytest backend/tests/test_compliance.py backend/tests/test_documents.py` | Test compliance obligations & document registry | Exit 0 (5 passed in 3.12s) |
+| `pytest` | Run full test suite (Milestone 4) | Exit 0 (21 passed in 11.06s) |
+| `npm run build --prefix frontend` | Compile production frontend bundle (Milestone 4) | Exit 0 (Success, dist generated) |
 
 ---
 
-## 3. Known Defects & Limitations
-- Full EVC coordination (scheduling experts roster, report upload) and compliance obligations verification are scheduled for Milestones 4 and 6.
+## 3. Milestone 4 Completed: Compliance Obligations & Document Registry (P0)
+- **ComplianceService**: Digital tracking of undertakings and conditions precedent. Enforces invariant INV-01: uploaded evidence enters `SUBMITTED`, never automatically `VERIFIED`.
+- **Two-Step Verification**: Requires review by an authorized AICTE officer (`RO_OFFICER`, `BO_OFFICER`, `COMP_REVIEW`) with mandatory review notes. Supports deficiency rejection and resubmission.
+- **DocumentService**: Prescribed Document Registry managing registered lease deeds, municipal fire NOCs, and building safety certificates with validity windows.
+- **Renewal Versioning**: Renewal upload sets original to `SUPERSEDED`, links `previous_document_id`, sets replacement version `v(N+1)`, and holds state in `RENEWAL_SUBMITTED` until authorized review.
+- **Protected Downloads**: Direct file download endpoint `GET /api/documents/{id}/download` enforcing strict record-level scoping (cannot access other institutions' documents).
+- **Frontend Pages**: Complete UI implementations in `frontend/src/pages/CompliancePage.tsx` and `frontend/src/pages/DocumentsPage.tsx`.
 
 ---
 
-## 4. Next Steps
-- Execute Milestone 4: Implement Compliance Obligations & Prescribed Document Registry (P0), evidence upload, two-step verification, lease renewal workflow, and checksum integrity.
+## 4. Known Defects & Limitations
+- Automated alert generation (windows: 30, 15, 7, 1 day, overdue) and escalation queue are queued for Milestone 5.
+- Full EVC expert coordination workflow is scheduled for Milestone 6.
+
+---
+
+## 5. Next Steps
+- Execute Milestone 5: Implement Deadline and Alert Engine (P0), compound idempotency, downtime catch-up, notification outbox, and escalation management.
+

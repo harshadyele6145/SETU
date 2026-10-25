@@ -62,3 +62,4 @@ For deployment against live AICTE infrastructure:
 3. **Idempotency Keys:** Mandatory unique transaction IDs to prevent duplicate status submissions.
 4. **Reconciliation Mechanism:** Daily scheduled batch reconciliation comparing SETU state hash with AICTE central registry.
 5. **Fallback:** Graceful circuit-breaking where failed synchronizations queue in a dead-letter table for administrative review.
+

@@ -34,5 +34,6 @@ class DocumentRegistry(BaseModel):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
     institution = relationship("Institution", back_populates="documents")
+    application = relationship("Application")
     verified_by = relationship("User")
     previous_version = relationship("DocumentRegistry", remote_side="DocumentRegistry.id", backref="renewals")

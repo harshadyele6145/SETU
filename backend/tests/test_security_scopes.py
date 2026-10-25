@@ -80,3 +80,4 @@ def test_statutory_authority_enforcement():
     )
     # Permitted without raising exception
     require_statutory_authority(comp_auth_user)
+

@@ -49,3 +49,4 @@ class ApplicationHistory(BaseModel):
     actor = relationship("User")
     from_stage = relationship("WorkflowStage", foreign_keys=[from_stage_id])
     to_stage = relationship("WorkflowStage", foreign_keys=[to_stage_id])
+

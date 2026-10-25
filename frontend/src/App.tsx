@@ -7,6 +7,8 @@ import { Navbar } from './components/Navbar';
 import { DashboardPage } from './pages/DashboardPage';
 import { ApplicationsPage } from './pages/ApplicationsPage';
 import { TimelinePage } from './pages/TimelinePage';
+import { CompliancePage } from './pages/CompliancePage';
+import { DocumentsPage } from './pages/DocumentsPage';
 import { AuditTrailPage } from './pages/AuditTrailPage';
 import { GenericModulePage } from './pages/GenericModulePage';
 
@@ -26,8 +28,8 @@ export const App: React.FC = () => {
                   <Route path="/applications" element={<ApplicationsPage />} />
                   <Route path="/timeline" element={<TimelinePage />} />
                   <Route path="/evc" element={<GenericModulePage title="Expert Visit Committee (EVC) Management" moduleKey="evc" />} />
-                  <Route path="/compliance" element={<GenericModulePage title="Undertakings & Institutional Compliance" moduleKey="compliance" />} />
-                  <Route path="/documents" element={<GenericModulePage title="Prescribed Documents & Lease Renewals" moduleKey="documents" />} />
+                  <Route path="/compliance" element={<CompliancePage />} />
+                  <Route path="/documents" element={<DocumentsPage />} />
                   <Route path="/alerts" element={<GenericModulePage title="Alerts & Escalations" moduleKey="alerts" />} />
                   <Route path="/reports" element={<GenericModulePage title="Reports & Pendency Analytics" moduleKey="reports" />} />
                   <Route path="/audit" element={<AuditTrailPage />} />

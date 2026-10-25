@@ -39,3 +39,4 @@ class EVCExpert(BaseModel):
     status: Mapped[str] = mapped_column(String(50), default="ASSIGNED")
 
     visit = relationship("EVCVisit", back_populates="experts")
+

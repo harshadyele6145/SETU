@@ -13,3 +13,4 @@ class Region(BaseModel):
     institutions = relationship("Institution", back_populates="region")
     users = relationship("User", back_populates="region")
     applications = relationship("Application", back_populates="region")
+

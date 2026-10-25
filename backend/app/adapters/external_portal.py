@@ -107,3 +107,4 @@ class MockPortalAdapter(ExternalPortalAdapter):
 
 
 mock_portal_adapter = MockPortalAdapter()
+

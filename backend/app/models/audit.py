@@ -24,3 +24,4 @@ class AuditEvent(BaseModel):
     # Cryptographic hash chain for tamper evidence
     previous_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     current_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+

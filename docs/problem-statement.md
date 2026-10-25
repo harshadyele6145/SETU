@@ -27,3 +27,4 @@ AICTE oversees technical education institutions across India. Annual approvals, 
 
 ### 3. Non-Negotiable Regulatory Safeguard
 The system operates strictly within AICTE Approval Process Handbook (APH) norms. Automated alerts, recommendations, and prioritization engines support administrative velocity but **never replace statutory human scrutiny, physical/hybrid inspections, or decisions reserved for the Competent Authority**.
+

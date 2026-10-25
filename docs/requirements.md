@@ -79,3 +79,4 @@
 - **REQ-NF04 (Accessibility):** WCAG 2.1 AA / GIGW compliance, keyboard navigability, high-contrast indicators, accessible ARIA roles.
 - **REQ-NF05 (Observability & Health):** Health check endpoints (`/health`, `/ready`) reporting DB connectivity and scheduler status.
 - **REQ-NF06 (Maintainability):** Clean separation of concerns (API routers, business services, database repositories, schema models).
+

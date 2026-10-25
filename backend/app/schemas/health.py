@@ -8,3 +8,4 @@ class HealthResponse(BaseModel):
     environment: str
     database_connected: bool
     details: Dict[str, Any] = {}
+

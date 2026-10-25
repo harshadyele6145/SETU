@@ -36,3 +36,4 @@ def check_database_health() -> bool:
         return True
     except Exception:
         return False
+

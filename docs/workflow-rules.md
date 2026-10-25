@@ -75,3 +75,4 @@ stateDiagram-v2
 3. **Regional Scope Enforcement:** Regional officers can only transition applications originating in their assigned Region.
 4. **Resubmission Counter:** Resubmissions increment the application's `return_count`, allowing the Exception Cockpit to flag repeatedly returned applications.
 5. **Timeline and Audit Event:** Every state movement writes a row to `application_history` and simultaneously appends a cryptographic hash-chained event to `audit_events`.
+

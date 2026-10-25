@@ -83,3 +83,4 @@ To ensure tamper evidence:
 - **Scheduler:** Lightweight, non-blocking background worker evaluating deadlines every configured interval.
 - **Downtime Catch-Up:** Upon startup or restart, the scheduler evaluates the entire active dataset, catching up on any missed windows, marking them as late-evaluated without duplicating previously issued alerts.
 - **Idempotency:** Alerts use compound idempotency keys (`entity_type:entity_id:alert_type:window_day`). Duplicate evaluations never produce duplicate alerts.
+

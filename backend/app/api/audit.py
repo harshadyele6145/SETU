@@ -50,3 +50,4 @@ def verify_audit_hash_chain(
         verification_message=msg,
         checked_at=datetime.now(timezone.utc)
     )
+

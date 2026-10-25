@@ -19,3 +19,4 @@ class DashboardSummary(BaseModel):
     route_distribution: List[Dict[str, Any]]
     regional_workload: List[Dict[str, Any]]
     recent_activity: List[Dict[str, Any]]
+

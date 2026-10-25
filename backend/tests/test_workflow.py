@@ -176,3 +176,4 @@ def test_cross_region_modification_rejected(client: TestClient, db_session):
     )
     assert cross_reg_attempt.status_code == 403
     assert "Regional Officer cannot access or modify cases outside their designated Region" in cross_reg_attempt.json()["detail"]
+

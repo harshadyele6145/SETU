@@ -34,9 +34,9 @@
 ## Part 4 — Engineering Rules
 - [x] Real frontend-to-backend functionality (no static mocks)
 - [x] Authoritative data persisted in database
-- [ ] Backend-enforced authentication and record-level permissions
+- [x] Backend-enforced authentication and record-level permissions
 - [ ] Dynamic dashboard metrics (zero hardcoded counts)
-- [ ] Evidence submission distinct from verification
+- [x] Evidence submission distinct from verification
 - [x] Cryptographic audit trail with SHA-256 hash chaining implemented
 - [x] Automated tests executed
 
@@ -46,12 +46,12 @@
 - [ ] WCAG 2.1 AA / GIGW accessibility considerations
 
 ## Parts 6 to 12 — Core Modules (P0)
-- [ ] 8 RBAC roles implemented & tested
-- [ ] Routes A, B, C, D workflow state machine
+- [x] 8 RBAC roles implemented & tested
+- [x] Routes A, B, C, D workflow state machine
 - [ ] Deadline calculations & timezone handling (`Asia/Kolkata`)
 - [ ] EVC Management (queues, scheduling, completion, report tracking)
-- [ ] Compliance & undertakings lifecycle
-- [ ] Document registry, lease validity, renewal & version history
+- [x] Compliance & undertakings lifecycle
+- [x] Document registry, lease validity, renewal & version history
 - [ ] Alert service, multi-channel simulation, idempotency, downtime recovery
 
 ## Part 13 — Innovations (P1 & P2)
@@ -66,3 +66,4 @@
 - [ ] Pytest suite covering auth, scopes, transitions, deadlines, alerts, and hash-chain
 - [ ] Local backup and restore script tested
 - [ ] Security test results and documentation
+

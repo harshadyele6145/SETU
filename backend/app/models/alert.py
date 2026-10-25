@@ -32,3 +32,4 @@ class Alert(BaseModel):
     region = relationship("Region")
     acknowledged_by = relationship("User")
     notifications = relationship("NotificationOutbox", back_populates="alert")
+

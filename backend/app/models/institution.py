@@ -20,3 +20,4 @@ class Institution(BaseModel):
     applications = relationship("Application", back_populates="institution")
     compliance_obligations = relationship("ComplianceObligation", back_populates="institution")
     documents = relationship("DocumentRegistry", back_populates="institution")
+

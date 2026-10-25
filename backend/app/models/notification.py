@@ -20,3 +20,4 @@ class NotificationOutbox(BaseModel):
 
     alert = relationship("Alert", back_populates="notifications")
     recipient = relationship("User")
+

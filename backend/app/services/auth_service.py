@@ -84,3 +84,4 @@ def require_statutory_authority(current_user: User) -> None:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Regulatory Safeguard: Final statutory approval or rejection decisions are strictly reserved for the Competent Authority."
         )
+

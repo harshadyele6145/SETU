@@ -69,3 +69,4 @@ def test_audit_hash_chain_tamper_detection(client: TestClient, db_session):
     assert is_valid is False
     assert broken_seq == tampered_seq
     assert "tamper detected" in msg.lower()
+

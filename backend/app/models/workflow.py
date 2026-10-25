@@ -26,3 +26,4 @@ class WorkflowStage(BaseModel):
     is_terminal: Mapped[bool] = mapped_column(Boolean, default=False)
 
     workflow = relationship("WorkflowDefinition", back_populates="stages")
+

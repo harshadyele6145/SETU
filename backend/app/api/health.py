@@ -36,3 +36,4 @@ def readiness_probe(response: Response):
 @router.get("/api/health", response_model=HealthResponse)
 def api_health_probe(response: Response):
     return health_probe(response)
+

@@ -87,3 +87,4 @@ Evaluation may be based on workflow accuracy, timeliness of alerts, reliability 
 ## Regulatory Safeguard
 
 The system shall function in accordance with the applicable AICTE regulations, Approval Process Handbook and authorised administrative procedures. Automated alerts, recommendations and workflow actions shall support the approval process but shall not replace statutory scrutiny, verification, inspections or decisions required to be taken by the competent authority.
+

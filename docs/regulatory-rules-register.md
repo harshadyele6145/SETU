@@ -40,3 +40,4 @@
 3. **Statutory Decisional Boundary (`INV-03`):** Automated algorithms (including the Attention Engine and Bottleneck Cockpit) provide operational prioritisation and decision support only. Statutory approvals/rejections can only be executed by authenticated users possessing the `COMP_AUTH` role.
 4. **Scope Isolation (`INV-04`):** An Institution Administrator cannot query or view records belonging to any other institution. A Regional Officer cannot perform operational actions on applications outside their assigned geographic Region.
 5. **Immutable Audit Trail (`INV-05`):** Every significant workflow, compliance, document, or assignment change produces an immutable audit record linked via SHA-256 hash chaining to detect tampering.
+

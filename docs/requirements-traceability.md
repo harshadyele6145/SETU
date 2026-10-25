@@ -15,3 +15,4 @@
 | **REQ-F11** | Compliance Dependency View | P2 | `app/services/dependency_service.py` | `frontend/src/pages/ComplianceDependencies.tsx` | `tests/test_compliance.py` | Demo D | IMPLEMENTED (M7) |
 | **REQ-F12** | Explainable Case Summarizer | P2 | `app/services/summary_service.py` | `frontend/src/components/CaseSummaryCard.tsx` | `tests/test_workflow.py` | Demo A | IMPLEMENTED (M7) |
 | **REQ-F13** | External Portal Adapter & Mock | P2 | `app/adapters/external_portal.py` | `frontend/src/pages/IntegrationMonitor.tsx` | `tests/test_portal_adapter.py` | Integration check | IMPLEMENTED (M1) |
+

@@ -14,8 +14,8 @@
 | Audit Trail & SHA-256 Hash Chaining | Milestone 3 | VERIFIED & DONE | `backend/app/services/audit_service.py`, `backend/tests/test_audit_hashchain.py` (2 passed) |
 | Reset & Seed Script (26 Synthetic Apps)| Milestone 3 | VERIFIED & DONE | `backend/seed/reset_and_seed.py` |
 | Applications & Timeline UI Pages | Milestone 3 | VERIFIED & DONE | `frontend/src/pages/ApplicationsPage.tsx`, `frontend/src/pages/TimelinePage.tsx` |
-| Compliance Obligations & Evidence | Milestone 4 | PLANNED | Models designed |
-| Document Registry & Expiry Tracking | Milestone 4 | PLANNED | Models designed |
+| Compliance Obligations & Evidence | Milestone 4 | VERIFIED & DONE | `backend/app/services/compliance_service.py`, `backend/tests/test_compliance.py` (3 passed) |
+| Document Registry & Expiry Tracking | Milestone 4 | VERIFIED & DONE | `backend/app/services/document_service.py`, `backend/tests/test_documents.py` (2 passed) |
 | Deadline Evaluator & Alerts Engine | Milestone 5 | PLANNED | Logic designed |
 | EVC Management & Report Tracking | Milestone 6 | PLANNED | Workflow designed |
 | Live Dashboard & Reporting | Milestone 6 | PLANNED | UI & API designed |
@@ -24,3 +24,4 @@
 | End-to-End Validation & Fallback Script | Milestone 8 | PLANNED | Script outline planned |
 
 *Legend: PLANNED -> IN PROGRESS -> IMPLEMENTED -> TESTED -> VERIFIED & DONE*
+

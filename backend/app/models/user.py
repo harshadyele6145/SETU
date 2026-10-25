@@ -19,3 +19,4 @@ class User(BaseModel):
     institution = relationship("Institution", back_populates="users")
     region = relationship("Region", back_populates="users")
     assigned_applications = relationship("Application", back_populates="assigned_officer", foreign_keys="Application.assigned_officer_id")
+

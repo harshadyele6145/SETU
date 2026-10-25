@@ -64,3 +64,4 @@ erDiagram
     - `id` (UUID PK), `alert_id` (FK `alerts.id`), `recipient_user_id` (FK `users.id` Nullable), `recipient_email` (VARCHAR), `channel` (VARCHAR), `status` (VARCHAR), `retry_count` (INTEGER Default 0), `last_error` (TEXT Nullable), `sent_at` (TIMESTAMP TZ Nullable), `created_at` (TIMESTAMP TZ).
 15. **`audit_events`**: Append-only cryptographic ledger.
     - `id` (UUID PK), `sequence_no` (INTEGER Unique), `timestamp` (TIMESTAMP TZ), `actor_id` (UUID Nullable), `actor_role` (VARCHAR), `action` (VARCHAR), `entity_type` (VARCHAR), `entity_id` (UUID), `previous_state` (VARCHAR Nullable), `new_state` (VARCHAR Nullable), `details_json` (TEXT), `previous_hash` (VARCHAR), `current_hash` (VARCHAR), `created_at` (TIMESTAMP TZ).
+

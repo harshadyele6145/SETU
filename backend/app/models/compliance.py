@@ -55,3 +55,4 @@ class ComplianceEvidence(BaseModel):
     obligation = relationship("ComplianceObligation", back_populates="evidences")
     submitted_by = relationship("User", foreign_keys=[submitted_by_id])
     verified_by = relationship("User", foreign_keys=[verified_by_id])
+

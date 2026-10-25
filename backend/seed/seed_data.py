@@ -335,6 +335,70 @@ def seed_database(db_session=None):
 
         print(f"Created {len(apps_created)} Synthetic Applications across Routes A, B, C, D.")
 
+        # 6. Seed 12+ Compliance Obligations across Institutions
+        obligations_data = [
+            ("1-100234501", "FIRE_SAFETY", "Annual Municipal Fire NOC Renewal", "Submit updated Chief Fire Officer safety certificate.", today + timedelta(days=20), "UPCOMING", "Dr. S. K. Gupta"),
+            ("1-100234501", "BARRIER_FREE", "Barrier-Free Access & Ramp Construction", "Install braille-enabled lifts and ramps across Academic Block B.", today + timedelta(days=5), "DUE_SOON", "Dr. S. K. Gupta"),
+            ("1-100234502", "LAB_EQUIPMENT", "AI & Robotics Lab Commissioning", "Submit purchase invoices and physical installation photos for 30 high-performance GPU workstations.", today - timedelta(days=3), "OVERDUE", "Prof. N. K. Sharma"),
+            ("1-100234502", "FACULTY_CADRE", "Cadre Ratio Compliance (1:2:6)", "Appoint 2 Professors and 4 Associate Professors in Electronics & Communication.", today + timedelta(days=45), "UPCOMING", "Prof. N. K. Sharma"),
+            ("1-100234503", "SOLAR_ENERGY", "Rooftop Solar Plant Installation (25kW)", "Commission green energy grid per APH mandate.", today + timedelta(days=12), "SUBMITTED", "Principal S. M. Patil"),
+            ("1-100234503", "SEWAGE_TREATMENT", "Sewage Treatment Plant (STP) Clearance", "Submit State Pollution Control Board clearance certificate.", today - timedelta(days=10), "DEFICIENT", "Principal S. M. Patil"),
+            ("1-100234504", "DIGITAL_LIBRARY", "E-Journal Subscription & NDLI Club Registration", "Renew IEEE and Elsevier institutional digital subscriptions.", today + timedelta(days=80), "UPCOMING", "Dean Academics"),
+            ("1-100234505", "INTERNAL_COMPLAINTS", "Internal Complaints Committee (ICC) Constitution", "Constitute ICC per AICTE Regulations 2016 and display on website.", today - timedelta(days=60), "CLOSED", "Registrar"),
+            ("1-100234506", "FIRE_SAFETY", "Hostel Block Fire NOC", "Submit fire safety clearance for 400-bed student residence.", today + timedelta(days=2), "DUE_SOON", "Warden / Estate Officer"),
+            ("1-100234507", "CAMPUS_SECURITY", "CCTV Surveillance System Certification", "Install 360-degree high-definition coverage in examination control rooms.", today + timedelta(days=30), "UPCOMING", "Security Officer"),
+            ("1-100234508", "LANGUAGE_LAB", "Advanced English Communication Lab Setup", "Commission 40-seat multimedia audio-visual language software.", today + timedelta(days=15), "UPCOMING", "HOD Humanities"),
+            ("1-100234509", "STRUCTURAL_SAFETY", "Structural Stability Certificate", "Submit certified civil audit from Government Engineering College.", today - timedelta(days=1), "OVERDUE", "Estate Manager"),
+            ("1-100234510", "WATER_CONSERVATION", "Rainwater Harvesting Pit Construction", "Construct 3 rainwater recharging borewells on campus.", today + timedelta(days=60), "UPCOMING", "Campus Architect"),
+        ]
+
+        for inst_aicte_id, cat, title, desc_text, due, ob_status, resp in obligations_data:
+            inst = institutions_map[inst_aicte_id]
+            ob = ComplianceObligation(
+                institution_id=inst.id,
+                category=cat,
+                title=title,
+                description=desc_text,
+                condition_source="APH Condition Precedent",
+                due_date=due,
+                status=ob_status,
+                responsible_person=resp
+            )
+            db.add(ob)
+
+        # 7. Seed Prescribed Document Registry (Lease Deeds, Land Titles, Safety NOCs)
+        documents_data = [
+            ("1-100234501", "LEASE_DEED", "Registered Campus Land Lease Deed (30 Years)", today - timedelta(days=365*29 + 300), today + timedelta(days=65), 1, "EXPIRING_SOON"),
+            ("1-100234502", "FIRE_NOC", "Municipal Fire Safety Clearance", today - timedelta(days=360), today + timedelta(days=5), 1, "EXPIRING_SOON"),
+            ("1-100234503", "BUILDING_SAFETY", "Structural Stability Certificate (Civil Audit)", today - timedelta(days=730), today - timedelta(days=15), 1, "EXPIRED"),
+            ("1-100234504", "LEASE_DEED", "Perpetual Land Ownership Title Deed", today - timedelta(days=365*10), today + timedelta(days=365*20), 1, "VALID"),
+            ("1-100234505", "OCCUPANCY_CERT", "Municipal Corporation Building Occupancy Certificate", today - timedelta(days=1000), today + timedelta(days=365*15), 1, "VALID"),
+            ("1-100234506", "FIRE_NOC", "Fire NOC - Academic Complex", today - timedelta(days=350), today + timedelta(days=15), 1, "EXPIRING_SOON"),
+            ("1-100234507", "AICTE_AFFIDAVIT", "Anti-Ragging & Non-Capitation Fee Affidavit", today - timedelta(days=100), today + timedelta(days=265), 1, "VALID"),
+            ("1-100234508", "LEASE_DEED", "Registered Land Lease Agreement", today - timedelta(days=365*29 + 350), today - timedelta(days=5), 1, "EXPIRED"),
+            ("1-100234509", "BUILDING_SAFETY", "National Building Code Compliance Clearance", today - timedelta(days=400), today + timedelta(days=330), 1, "VALID"),
+            ("1-100234510", "OCCUPANCY_CERT", "Provisional Completion & Occupancy Certificate", today - timedelta(days=180), today + timedelta(days=185), 1, "VALID"),
+        ]
+
+        for inst_aicte_id, doc_cat, doc_title, iss_dt, exp_dt, ver, doc_st in documents_data:
+            inst = institutions_map[inst_aicte_id]
+            doc = DocumentRegistry(
+                institution_id=inst.id,
+                document_category=doc_cat,
+                title=doc_title,
+                issue_date=iss_dt,
+                expiry_date=exp_dt,
+                current_version=ver,
+                status=doc_st,
+                file_path="simulated_document_record.pdf",
+                file_size=1024 * 250,
+                mime_type="application/pdf",
+                sha256_hash="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            )
+            db.add(doc)
+
+        print(f"Created {len(obligations_data)} Compliance Obligations and {len(documents_data)} Prescribed Documents.")
+
         # Record Genesis Audit Event
         audit_service.record_event(
             db=db,
