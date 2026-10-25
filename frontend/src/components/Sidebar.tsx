@@ -36,9 +36,9 @@ export const navItems = [
   { name: 'User & Access Admin', path: '/users', icon: Users },
   { name: 'Notification Failures', path: '/notifications-recovery', icon: AlertOctagon },
   { name: 'Integration Monitor', path: '/integration', icon: Network },
-  { name: 'Compliance Dependencies', path: '/dependencies', icon: GitCommit, badge: 'P2 Depth' },
-  { name: 'Attention Queue', path: '/attention', icon: Zap, badge: 'P1 Innovation' },
-  { name: 'Bottleneck Cockpit', path: '/bottlenecks', icon: Gauge, badge: 'P1 Innovation' },
+  { name: 'Compliance Dependencies', path: '/dependencies', icon: GitCommit },
+  { name: 'Attention Queue', path: '/attention', icon: Zap },
+  { name: 'Bottleneck Cockpit', path: '/bottlenecks', icon: Gauge },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
@@ -74,11 +74,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
             >
               <Icon className="w-4 h-4 shrink-0 text-slate-400 group-hover:text-white" aria-hidden="true" />
               <span className="truncate flex-1">{item.name}</span>
-              {item.badge && (
-                <span className="text-[10px] bg-teal-900 text-teal-300 px-1.5 py-0.5 rounded font-mono">
-                  {item.badge.split(' ')[0]}
-                </span>
-              )}
             </NavLink>
           );
         })}
@@ -87,8 +82,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
       <div className="p-3 border-t border-slate-800 text-xs text-slate-400">
         <div className="flex items-center justify-between">
           <span>APH 2024-27</span>
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-teal-400">
-            SIH26262
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-teal-400 font-mono">
+            v1.0.0 · Core
           </span>
         </div>
       </div>

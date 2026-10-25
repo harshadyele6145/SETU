@@ -1,9 +1,11 @@
 import sys
 import os
+from pathlib import Path
 from datetime import datetime, timezone, timedelta, date
 
 sys.path.insert(0, os.path.abspath("."))
 
+from backend.app.core.config import settings
 from backend.app.core.database import SessionLocal, engine, Base
 from backend.app.core.security import get_password_hash, UserRole
 from backend.app.models.region import Region
@@ -379,6 +381,16 @@ def seed_database(db_session=None, generate_alerts: bool = False):
             ("1-100234509", "BUILDING_SAFETY", "National Building Code Compliance Clearance", today - timedelta(days=400), today + timedelta(days=330), 1, "VALID"),
             ("1-100234510", "OCCUPANCY_CERT", "Provisional Completion & Occupancy Certificate", today - timedelta(days=180), today + timedelta(days=185), 1, "VALID"),
         ]
+
+        # Ensure simulated_document_record.pdf exists in storage
+        storage_dir = Path(settings.STORAGE_DIR)
+        storage_dir.mkdir(parents=True, exist_ok=True)
+        sim_pdf = storage_dir / "simulated_document_record.pdf"
+        if not sim_pdf.exists():
+            sim_pdf.write_bytes(
+                b"%PDF-1.4\nBT /F1 12 Tf 72 712 Td (AICTE Official Regulatory Document Record) Tj ET\n"
+                b"BT /F1 10 Tf 72 690 Td (Registered Land Lease Deed and NOC Approval 2026) Tj ET\n%%EOF"
+            )
 
         for inst_aicte_id, doc_cat, doc_title, iss_dt, exp_dt, ver, doc_st in documents_data:
             inst = institutions_map[inst_aicte_id]

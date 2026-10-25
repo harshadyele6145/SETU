@@ -11,6 +11,7 @@ from backend.app.core.security import UserRole
 from backend.app.schemas.document import DocumentResponse, DocumentVerifyRequest
 from backend.app.services.auth_service import get_current_user, enforce_institution_scope
 from backend.app.services.document_service import document_service
+from backend.app.services.extraction_service import extraction_service
 
 router = APIRouter(prefix="/api/documents", tags=["Document Registry & Renewals"])
 
@@ -150,4 +151,28 @@ def download_protected_document(
         media_type=doc.mime_type if doc else "application/octet-stream",
         filename=filename
     )
+
+
+@router.get("/{id}/extract")
+def extract_and_analyze_document(
+    id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Extracts text and regulatory metadata from an uploaded document,
+    cross-referencing with registered metadata and detecting discrepancies.
+    """
+    abs_path = document_service.get_protected_file_path(db, id, current_user)
+    doc = db.get(DocumentRegistry, id)
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+    analysis = extraction_service.analyze_document(
+        file_path=str(abs_path),
+        registered_title=doc.title,
+        registered_category=doc.document_category,
+        registered_expiry=doc.expiry_date.isoformat() if doc.expiry_date else None
+    )
+    return analysis
 

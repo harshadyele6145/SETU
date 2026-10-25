@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 export interface UserProfile {
   id: string;
@@ -88,13 +88,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('setu_token');
     localStorage.removeItem('setu_user');
   };
-
-  // Auto-login default Regional Officer if no user is logged in
-  useEffect(() => {
-    if (!token) {
-      login('ro_north@aicte.gov.in');
-    }
-  }, []);
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
