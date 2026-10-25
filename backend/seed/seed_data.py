@@ -255,6 +255,86 @@ def seed_database(db_session=None):
 
         print(f"Created 4 Workflow Routes and {len(stages_lookup)} Workflow Stages.")
 
+        # 5. Seed 25+ Diverse Synthetic Applications across Routes A, B, C, D
+        sample_applications = [
+            # ROUTE A (Only Scrutiny)
+            ("1-100234501", "ROUTE_A", "UNDER_SCRUTINY", 4, "ro_north@aicte.gov.in", 0, "Extension of Approval (EoA)"),
+            ("1-100234502", "ROUTE_A", "SCRUTINY_DEFICIENT", 12, "ro_north@aicte.gov.in", 1, "Increase in Intake - Computer Science"),
+            ("1-100234503", "ROUTE_A", "SUBMITTED", 1, None, 0, "Extension of Approval (EoA)"),
+            ("1-100234504", "ROUTE_A", "SCRUTINY_RECOMMENDED", 6, "ro_west@aicte.gov.in", 0, "Introduction of New Course (AI & DS)"),
+            ("1-100234505", "ROUTE_A", "DECISION_PENDING", 16, "ro_north@aicte.gov.in", 0, "Extension of Approval (EoA)"),
+            ("1-100234506", "ROUTE_A", "APPROVED", 25, "ro_north@aicte.gov.in", 0, "Extension of Approval (EoA)"),
+            ("1-100234507", "ROUTE_A", "REJECTED", 28, "ro_north@aicte.gov.in", 2, "Closure of Course - Mechanical Engg"),
+            ("1-100234508", "ROUTE_A", "UNDER_SCRUTINY", 9, "ro_north@aicte.gov.in", 0, "Change of Site / Location"),
+            
+            # ROUTE B (Scrutiny + EVC)
+            ("1-100234501", "ROUTE_B", "EVC_QUEUE", 8, "evc_coord@aicte.gov.in", 0, "Setting up New Technical Institution"),
+            ("1-100234502", "ROUTE_B", "EVC_SCHEDULED", 5, "evc_coord@aicte.gov.in", 0, "Introduction of Supernumerary Seats"),
+            ("1-100234503", "ROUTE_B", "EVC_COMPLETED", 4, "evc_coord@aicte.gov.in", 0, "New Programme - Integrated MCA"),
+            ("1-100234504", "ROUTE_B", "EVC_REPORT_SUBMITTED", 6, "ro_west@aicte.gov.in", 0, "Setting up New Technical Campus"),
+            ("1-100234505", "ROUTE_B", "DECISION_PENDING", 18, "bo_officer@aicte.gov.in", 0, "Restoration of Intake"),
+            ("1-100234506", "ROUTE_B", "UNDER_SCRUTINY", 3, None, 0, "Conversion of Women's Inst to Co-ed"),
+            ("1-100234507", "ROUTE_B", "EVC_QUEUE", 11, "evc_coord@aicte.gov.in", 0, "Setting up New Polytechnic"),
+            ("1-100234508", "ROUTE_B", "APPROVED", 30, "bo_officer@aicte.gov.in", 0, "New Degree in Engineering"),
+
+            # ROUTE C (EVC + SAC/SHC)
+            ("1-100234509", "ROUTE_C", "SHC_QUEUE", 15, "comm_member@aicte.gov.in", 1, "Appeal against EVC Deficiency Notice"),
+            ("1-100234510", "ROUTE_C", "SAC_APPEAL", 22, "comm_member@aicte.gov.in", 2, "Standing Appellate Appeal on Land Norms"),
+            ("1-100234501", "ROUTE_C", "DECISION_PENDING", 26, "bo_officer@aicte.gov.in", 1, "Hearing Outcome on Faculty Cadre Ratio"),
+            ("1-100234502", "ROUTE_C", "REJECTED", 35, "bo_officer@aicte.gov.in", 2, "Non-compliance of Barrier-Free Access"),
+            ("1-100234503", "ROUTE_C", "SHC_QUEUE", 7, "comm_member@aicte.gov.in", 0, "Discrepancy in Built-up Area"),
+
+            # ROUTE D (Only EVC)
+            ("1-100234504", "ROUTE_D", "EVC_QUEUE", 14, None, 0, "Surprise Physical Verification"),
+            ("1-100234505", "ROUTE_D", "EVC_SCHEDULED", 3, "evc_coord@aicte.gov.in", 0, "Infrastructure Audit"),
+            ("1-100234506", "ROUTE_D", "EVC_COMPLETED", 2, "evc_coord@aicte.gov.in", 0, "Verification of Fire NOC Clearances"),
+            ("1-100234507", "ROUTE_D", "DECISION_PENDING", 9, "bo_officer@aicte.gov.in", 0, "Post-Inspection Governance Audit"),
+            ("1-100234508", "ROUTE_D", "APPROVED", 19, "bo_officer@aicte.gov.in", 0, "Complaint Verification Cleared"),
+        ]
+
+        apps_created = []
+        for a_idx, (inst_aicte_id, route_code, stage_key, days_ago, officer_email, ret_cnt, app_type) in enumerate(sample_applications, start=101):
+            inst = institutions_map[inst_aicte_id]
+            stg = stages_lookup.get((route_code, stage_key))
+            officer = users_map.get(officer_email) if officer_email else None
+            
+            sub_date = now - timedelta(days=days_ago + 3)
+            stage_date = now - timedelta(days=days_ago)
+            sla_days = stg.sla_days if stg else 7
+            deadline = stage_date + timedelta(days=sla_days) if sla_days > 0 else None
+
+            app = Application(
+                application_no=f"AICTE-2026-{a_idx:04d}",
+                institution_id=inst.id,
+                region_id=inst.region_id,
+                academic_year="2026-2027",
+                application_type=app_type,
+                route=route_code,
+                current_stage_id=stg.id if stg else None,
+                status=stage_key,
+                assigned_officer_id=officer.id if officer else None,
+                submitted_at=sub_date,
+                stage_entered_at=stage_date,
+                current_sla_deadline=deadline,
+                is_paused=False,
+                return_count=ret_cnt
+            )
+            db.add(app)
+            db.flush()
+            apps_created.append(app)
+
+            # Add initial history event
+            h = ApplicationHistory(
+                application_id=app.id,
+                to_stage_id=stg.id if stg else None,
+                action="INITIAL_SEED_STAGE",
+                actor_id=officer.id if officer else None,
+                comments=f"Application entered {stage_key} stage via synthetic seed."
+            )
+            db.add(h)
+
+        print(f"Created {len(apps_created)} Synthetic Applications across Routes A, B, C, D.")
+
         # Record Genesis Audit Event
         audit_service.record_event(
             db=db,

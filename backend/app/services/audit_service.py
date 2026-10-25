@@ -7,6 +7,12 @@ from sqlalchemy import select
 from backend.app.models.audit import AuditEvent
 
 
+def ensure_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
 class AuditService:
     GENESIS_HASH = "0" * 64
 
@@ -24,10 +30,10 @@ class AuditService:
         details_json: str,
         previous_hash: str
     ) -> str:
-        # Canonical string for SHA-256 computation
+        ts = ensure_utc(timestamp)
         canonical = (
             f"{sequence_no}|"
-            f"{timestamp.isoformat()}|"
+            f"{ts.isoformat()}|"
             f"{actor_id or ''}|"
             f"{actor_role}|"
             f"{action}|"

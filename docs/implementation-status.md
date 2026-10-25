@@ -10,8 +10,10 @@
 | External Portal Adapter Interface | Milestone 1 | IMPLEMENTED | `backend/app/adapters/external_portal.py` |
 | Authentication & RBAC (8 Roles) | Milestone 2 | VERIFIED & DONE | `backend/app/api/auth.py`, `backend/tests/test_auth.py` (5 passed) |
 | Scope-Enforced Data Isolation | Milestone 2 | VERIFIED & DONE | `backend/app/services/auth_service.py`, `backend/tests/test_security_scopes.py` (3 passed) |
-| Workflow State Machine (4 Routes) | Milestone 3 | PLANNED | FSM designed |
-| Audit Trail & SHA-256 Hash Chaining | Milestone 3 | IMPLEMENTED | `backend/app/services/audit_service.py` |
+| Workflow State Machine (4 Routes) | Milestone 3 | VERIFIED & DONE | `backend/app/services/workflow_engine.py`, `backend/tests/test_workflow.py` (4 passed) |
+| Audit Trail & SHA-256 Hash Chaining | Milestone 3 | VERIFIED & DONE | `backend/app/services/audit_service.py`, `backend/tests/test_audit_hashchain.py` (2 passed) |
+| Reset & Seed Script (26 Synthetic Apps)| Milestone 3 | VERIFIED & DONE | `backend/seed/reset_and_seed.py` |
+| Applications & Timeline UI Pages | Milestone 3 | VERIFIED & DONE | `frontend/src/pages/ApplicationsPage.tsx`, `frontend/src/pages/TimelinePage.tsx` |
 | Compliance Obligations & Evidence | Milestone 4 | PLANNED | Models designed |
 | Document Registry & Expiry Tracking | Milestone 4 | PLANNED | Models designed |
 | Deadline Evaluator & Alerts Engine | Milestone 5 | PLANNED | Logic designed |
