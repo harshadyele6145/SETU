@@ -98,3 +98,4 @@ SETU includes a background scheduler (`backend/app/services/scheduler.py`) that 
   - If any job has not executed within 2x its expected interval, an immediate catch-up run (`*_CATCHUP_RECOVERY`) is executed and recorded in the database ledger.
 - **Observability**:
   - Live job execution history is queryable at `GET /health/jobs`.
+

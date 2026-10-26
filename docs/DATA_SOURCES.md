@@ -87,3 +87,4 @@ When deploying for an authorized institutional pilot:
    - `is_synthetic = False`
    - `sync_status = "SYNCED"`
    - Cryptographic SHA-256 hash chaining on all workflow determinations.
+

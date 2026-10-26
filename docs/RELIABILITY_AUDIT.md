@@ -99,3 +99,4 @@ SETU is currently a functioning, demonstrable approval operations platform desig
 - **Mitigations**:
   - Wrap all critical mutations in transactional units (`db.commit()` only after `record_event()`).
   - Anchor the Genesis Hash and maintain an external ledger checkpoint in production.
+

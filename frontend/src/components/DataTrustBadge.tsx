@@ -52,3 +52,4 @@ export const DataTrustBadge: React.FC<DataTrustBadgeProps> = ({
     </span>
   );
 };
+

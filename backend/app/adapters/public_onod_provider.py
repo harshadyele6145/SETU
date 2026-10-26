@@ -250,3 +250,4 @@ class AICTEOpenDataProvider(BaseIntegrationProvider):
 
 
 aicte_open_data_provider = AICTEOpenDataProvider()
+

@@ -197,3 +197,4 @@ def test_integration_endpoints_and_rbac_scoping(client: TestClient, db_session: 
     sync_data = sync_ok.json()
     assert sync_data["status"] == "SUCCESS"
     assert sync_data["reconciled_count"] >= 1
+

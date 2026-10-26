@@ -15,3 +15,4 @@ class JobExecution(BaseModel):
     items_processed: Mapped[int] = mapped_column(Integer, default=0)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     execution_time_ms: Mapped[float] = mapped_column(Float, default=0.0)
+

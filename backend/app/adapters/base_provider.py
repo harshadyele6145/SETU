@@ -82,3 +82,4 @@ class BaseIntegrationProvider(ABC):
     def reconcile_records(self, db: Session, batch_limit: int = 50) -> Dict[str, Any]:
         """Runs periodic reconciliation of master institutional records."""
         pass
+

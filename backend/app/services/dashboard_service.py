@@ -1,7 +1,101 @@
+import logging
 from datetime import date, datetime, timezone
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func, false
+
+logger = logging.getLogger("setu.dashboard")
+
+# Canonical 6 Display Categories for the Stage Pipeline Distribution
+CANONICAL_STAGE_CATEGORIES: List[Tuple[str, str]] = [
+    ("DRAFT", "Draft"),
+    ("SUBMITTED", "Submitted"),
+    ("SCRUTINY", "Scrutiny"),
+    ("EVC", "EVC Visit"),
+    ("SAC_SHC", "SAC / SHC"),
+    ("DECISION", "Final Decision"),
+]
+
+# Comprehensive lookup dictionary mapping real workflow stage keys, names,
+# statuses, and known legacy aliases into the 6 canonical categories.
+STAGE_CATEGORY_MAPPING: Dict[str, str] = {
+    # 1. DRAFT
+    "DRAFT": "DRAFT",
+    "DRAFT_APPLICATION": "DRAFT",
+    "Draft": "DRAFT",
+    "Draft Application": "DRAFT",
+
+    # 2. SUBMITTED
+    "SUBMITTED": "SUBMITTED",
+    "SUBMITTED_REGIONAL": "SUBMITTED",
+    "INTAKE": "SUBMITTED",
+    "REGIONAL_INTAKE": "SUBMITTED",
+    "Submitted": "SUBMITTED",
+    "Submitted / Regional Intake": "SUBMITTED",
+
+    # 3. SCRUTINY
+    "SCRUTINY": "SCRUTINY",
+    "UNDER_SCRUTINY": "SCRUTINY",
+    "SCRUTINY_DEFICIENT": "SCRUTINY",
+    "SCRUTINY_RECOMMENDED": "SCRUTINY",
+    "SCRUTINY_IN_PROGRESS": "SCRUTINY",
+    "SCRUTINY_COMPLETED": "SCRUTINY",
+    "PENDING_CLARIFICATION": "SCRUTINY",
+    "DEFICIENCY_COMMUNICATED": "SCRUTINY",
+    "CLARIFICATION_REQUESTED": "SCRUTINY",
+    "Scrutiny": "SCRUTINY",
+    "Under Scrutiny": "SCRUTINY",
+    "Scrutiny in Progress": "SCRUTINY",
+    "Clarification Requested": "SCRUTINY",
+    "Scrutiny Cleared / Review": "SCRUTINY",
+    "Scrutiny Cleared": "SCRUTINY",
+
+    # 4. EVC VISIT
+    "EVC": "EVC",
+    "EVC_QUEUE": "EVC",
+    "EVC_SCHEDULED": "EVC",
+    "EVC_COMPLETED": "EVC",
+    "EVC_REPORT_SUBMITTED": "EVC",
+    "EVC_INSPECTION": "EVC",
+    "EVC_VISIT": "EVC",
+    "EVC Visit": "EVC",
+    "Awaiting EVC Scheduling": "EVC",
+    "EVC Inspection Scheduled": "EVC",
+    "Visit Conducted / Report Awaited": "EVC",
+    "EVC Visit Done": "EVC",
+    "Report Under Review": "EVC",
+    "EVC Inspection": "EVC",
+    "Inspection Scheduled": "EVC",
+    "EVC Report Submitted": "EVC",
+
+    # 5. SAC / SHC
+    "SAC_SHC": "SAC_SHC",
+    "SHC_QUEUE": "SAC_SHC",
+    "SAC_APPEAL": "SAC_SHC",
+    "SHC_HEARING": "SAC_SHC",
+    "SAC_HEARING": "SAC_SHC",
+    "SHC": "SAC_SHC",
+    "SAC": "SAC_SHC",
+    "SAC_RECOMMENDED": "SAC_SHC",
+    "SHC_RECOMMENDED": "SAC_SHC",
+    "SAC / SHC": "SAC_SHC",
+    "Standing Hearing Committee": "SAC_SHC",
+    "Standing Appellate Committee": "SAC_SHC",
+    "SAC Recommendation": "SAC_SHC",
+    "SHC Queue": "SAC_SHC",
+    "SAC Appeal": "SAC_SHC",
+
+    # 6. FINAL DECISION (Active pending-decision queue only, excluding completed APPROVED/REJECTED)
+    "DECISION": "DECISION",
+    "DECISION_PENDING": "DECISION",
+    "COMPETENT_AUTHORITY_QUEUE": "DECISION",
+    "COMPETENT_AUTH": "DECISION",
+    "PENDING_DECISION": "DECISION",
+    "Final Decision": "DECISION",
+    "Decision Pending": "DECISION",
+    "Decision Pending (Competent Auth)": "DECISION",
+    "Competent Authority Review": "DECISION",
+}
 
 from backend.app.models.application import Application
 from backend.app.models.compliance import ComplianceObligation, ComplianceEvidence
@@ -15,6 +109,52 @@ from backend.app.models.base import utc_now
 
 
 class DashboardService:
+    @classmethod
+    def map_stage_to_category(cls, stage_identifier: Optional[str]) -> Optional[str]:
+        """
+        Maps a stage key, stage name, or status string to one of the 6 canonical categories:
+        ['DRAFT', 'SUBMITTED', 'SCRUTINY', 'EVC', 'SAC_SHC', 'DECISION'].
+        Returns None for terminal states (APPROVED, REJECTED) or unrecognized values.
+        """
+        if not stage_identifier:
+            return None
+        clean = stage_identifier.strip()
+        if clean in ["APPROVED", "REJECTED", "Approved", "Rejected"]:
+            return None
+        return STAGE_CATEGORY_MAPPING.get(clean) or STAGE_CATEGORY_MAPPING.get(clean.upper())
+
+    @classmethod
+    def classify_application_stage(cls, app: Application) -> Tuple[Optional[str], Optional[str]]:
+        """
+        Deterministically maps an active application to one of the 6 canonical categories:
+        ['DRAFT', 'SUBMITTED', 'SCRUTINY', 'EVC', 'SAC_SHC', 'DECISION'].
+        Returns (category_key, source_value).
+        Completed terminal applications (APPROVED, REJECTED) return (None, status).
+        """
+        # Exclude completed terminal decisions from pipeline categories
+        if app.status in ["APPROVED", "REJECTED"]:
+            return None, app.status
+
+        # Priority 1: Check current_stage.stage_key
+        if app.current_stage:
+            if app.current_stage.is_terminal:
+                return None, app.current_stage.stage_key
+            s_key = app.current_stage.stage_key
+            if s_key in STAGE_CATEGORY_MAPPING:
+                return STAGE_CATEGORY_MAPPING[s_key], s_key
+            # Priority 2: Check current_stage.name
+            s_name = app.current_stage.name
+            if s_name in STAGE_CATEGORY_MAPPING:
+                return STAGE_CATEGORY_MAPPING[s_name], s_name
+
+        # Priority 3: Fallback to app.status
+        if app.status and app.status in STAGE_CATEGORY_MAPPING:
+            return STAGE_CATEGORY_MAPPING[app.status], app.status
+
+        # Unrecognized stage/status
+        unknown_val = (app.current_stage.stage_key if app.current_stage else None) or app.status
+        return "UNKNOWN", unknown_val
+
     @staticmethod
     def get_dashboard_stats(db: Session, user: User) -> Dict[str, Any]:
         """
@@ -108,12 +248,50 @@ class DashboardService:
             for r in ["ROUTE_A", "ROUTE_B", "ROUTE_C", "ROUTE_D"]
         ]
 
-        # Stage breakdown (only active)
-        stage_counts = {}
+        # Stage pipeline breakdown (scoped active applications only)
+        category_counts = {cat_key: 0 for cat_key, _ in CANONICAL_STAGE_CATEGORIES}
+        unmapped_records = []
+
         active_instances = app_q.filter(Application.status.notin_(["APPROVED", "REJECTED"])).all()
         for a in active_instances:
-            stg_name = a.current_stage.name if a.current_stage else "Pending Initial Scrutiny"
-            stage_counts[stg_name] = stage_counts.get(stg_name, 0) + 1
+            cat, source_val = DashboardService.classify_application_stage(a)
+            if cat in category_counts:
+                category_counts[cat] += 1
+            elif cat == "UNKNOWN":
+                unmapped_records.append({"application_no": a.application_no, "source_value": source_val})
+                logger.warning(
+                    f"Unexpected workflow stage or status '{source_val}' on application {a.application_no}. Not mapped to 6 canonical categories."
+                )
+
+        stage_breakdown = {
+            # Canonical uppercase stage keys expected by frontend
+            "DRAFT": category_counts["DRAFT"],
+            "SUBMITTED": category_counts["SUBMITTED"],
+            "SCRUTINY": category_counts["SCRUTINY"],
+            "EVC": category_counts["EVC"],
+            "SAC_SHC": category_counts["SAC_SHC"],
+            "DECISION": category_counts["DECISION"],
+            # Category display labels
+            "Draft": category_counts["DRAFT"],
+            "Submitted": category_counts["SUBMITTED"],
+            "Scrutiny": category_counts["SCRUTINY"],
+            "EVC Visit": category_counts["EVC"],
+            "SAC / SHC": category_counts["SAC_SHC"],
+            "Final Decision": category_counts["DECISION"],
+            # Granular/legacy aliases
+            "Under Scrutiny": category_counts["SCRUTINY"],
+            "EVC Inspection": category_counts["EVC"],
+            "SAC Recommendation": category_counts["SAC_SHC"],
+            "Decision Pending": category_counts["DECISION"],
+        }
+        if unmapped_records:
+            stage_breakdown["_unmapped_count"] = len(unmapped_records)
+            stage_breakdown["_unmapped_records"] = unmapped_records
+
+        stage_distribution = [
+            {"stage_key": cat_key, "stage": label, "count": category_counts[cat_key]}
+            for cat_key, label in CANONICAL_STAGE_CATEGORIES
+        ]
 
         # -------------------------------------------------------------
         # 3. REGIONAL WORKLOAD (Strict Data Isolation)
@@ -401,7 +579,8 @@ class DashboardService:
                 "expired_documents": expired_documents
             },
             "route_distribution": route_distribution,
-            "stage_breakdown": stage_counts,
+            "stage_breakdown": stage_breakdown,
+            "stage_distribution": stage_distribution,
             "regional_workload": regional_workload,
             "compliance_health": {
                 "total": total_obligations,

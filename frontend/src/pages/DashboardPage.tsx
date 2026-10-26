@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   FileText, 
@@ -47,6 +47,7 @@ interface DashboardStats {
   };
   route_distribution: { route: string; count: number }[];
   stage_breakdown: { [key: string]: number };
+  stage_distribution?: { stage_key: string; stage: string; count: number }[];
   regional_workload: {
     region_id: string;
     region_code: string;
@@ -101,15 +102,29 @@ export const DashboardPage: React.FC = () => {
     fetchStats();
   }, [token]);
 
-  // Stage funnel data formatting
-  const stageData = stats ? [
-    { stage: 'Draft', count: stats.stage_breakdown['DRAFT'] || stats.stage_breakdown['Draft'] || 0 },
-    { stage: 'Submitted', count: stats.stage_breakdown['SUBMITTED'] || stats.stage_breakdown['Submitted'] || 0 },
-    { stage: 'Scrutiny', count: stats.stage_breakdown['SCRUTINY'] || stats.stage_breakdown['Under Scrutiny'] || 0 },
-    { stage: 'EVC Visit', count: stats.stage_breakdown['EVC'] || stats.stage_breakdown['EVC Inspection'] || 0 },
-    { stage: 'SAC / SHC', count: stats.stage_breakdown['SAC_SHC'] || stats.stage_breakdown['SAC Recommendation'] || 0 },
-    { stage: 'Final Decision', count: stats.stage_breakdown['DECISION'] || stats.stage_breakdown['Decision Pending'] || 0 }
-  ] : [];
+  // Stage funnel data formatting (prefers structured stage_distribution, falls back to stage_breakdown)
+  const stageData = useMemo(() => {
+    if (!stats) return [];
+    if (stats.stage_distribution && stats.stage_distribution.length > 0) {
+      return stats.stage_distribution.map((item) => ({
+        stage: item.stage,
+        count: Number(item.count) || 0
+      }));
+    }
+    const sb = stats.stage_breakdown || {};
+    return [
+      { stage: 'Draft', count: sb['DRAFT'] ?? sb['Draft'] ?? 0 },
+      { stage: 'Submitted', count: sb['SUBMITTED'] ?? sb['Submitted'] ?? 0 },
+      { stage: 'Scrutiny', count: sb['SCRUTINY'] ?? sb['Scrutiny'] ?? 0 },
+      { stage: 'EVC Visit', count: sb['EVC'] ?? sb['EVC Visit'] ?? 0 },
+      { stage: 'SAC / SHC', count: sb['SAC_SHC'] ?? sb['SAC / SHC'] ?? 0 },
+      { stage: 'Final Decision', count: sb['DECISION'] ?? sb['Final Decision'] ?? 0 }
+    ];
+  }, [stats]);
+
+  const totalStageCount = useMemo(() => {
+    return stageData.reduce((acc, curr) => acc + curr.count, 0);
+  }, [stageData]);
 
   const roleView = stats?.role_view || {};
   const userRole = user?.role || '';
@@ -717,18 +732,55 @@ export const DashboardPage: React.FC = () => {
                 <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-teal-600" /> Stage Pipeline Distribution
                 </h3>
-                <span className="text-[11px] text-slate-400 font-mono">Real-time DB query</span>
+                <span className="text-[11px] text-slate-400 font-mono">
+                  {loading ? 'Querying...' : `${totalStageCount} active in scope`}
+                </span>
               </div>
               <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={stageData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="stage" tick={{ fontSize: 11 }} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#0f766e" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                {loading ? (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400">
+                    <span className="animate-pulse">Loading stage metrics...</span>
+                  </div>
+                ) : error ? (
+                  <div className="h-full flex items-center justify-center text-xs text-rose-500">
+                    Failed to load stage data: {error}
+                  </div>
+                ) : totalStageCount === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                    <TrendingUp className="w-8 h-8 text-slate-300 mb-2" />
+                    <p className="text-xs font-semibold text-slate-600">No applications in these stages</p>
+                    <p className="text-[11px] text-slate-400 mt-1 max-w-xs">
+                      There are currently no active applications progressing through approval stages for this authorized scope.
+                    </p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={stageData} margin={{ top: 10, right: 10, left: -20, bottom: 25 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                      <XAxis 
+                        dataKey="stage" 
+                        tick={{ fontSize: 11, fill: '#475569' }} 
+                        interval={0} 
+                        angle={-15} 
+                        textAnchor="end" 
+                      />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                      <Tooltip 
+                        formatter={(val: any) => [`${val} application${val === 1 ? '' : 's'}`, 'Volume']}
+                        labelFormatter={(lbl: string) => `Stage: ${lbl}`}
+                        contentStyle={{ 
+                          backgroundColor: '#0f172a', 
+                          borderColor: '#1e293b', 
+                          borderRadius: '6px', 
+                          color: '#f8fafc', 
+                          fontSize: '12px' 
+                        }}
+                        itemStyle={{ color: '#2dd4bf' }}
+                      />
+                      <Bar dataKey="count" fill="#0f766e" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </div>
             </div>
 

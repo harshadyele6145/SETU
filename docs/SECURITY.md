@@ -72,3 +72,4 @@ X-Request-ID: req_<correlation_id>
 2. **Access Limitation**: Zero cross-institution data leakage; institutional administrators cannot inspect peer institutions.
 3. **Auditability**: Complete actor identity, role, and client IP recorded on every statutory determination.
 4. **No Telemetry PII**: Sensitive contact credentials (phone numbers, personal emails) are masked or omitted in public telemetry feeds.
+

@@ -64,3 +64,4 @@ class ObservabilityMiddleware(BaseHTTPMiddleware):
         response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
 
         return response
+

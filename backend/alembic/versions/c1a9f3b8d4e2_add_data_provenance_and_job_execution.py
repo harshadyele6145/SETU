@@ -81,3 +81,4 @@ def downgrade() -> None:
         batch_op.drop_column('source_record_version')
         batch_op.drop_column('external_id')
         batch_op.drop_column('source_system')
+

@@ -118,3 +118,4 @@ To connect SETU to live National Informatics Centre (NIC) and Central AICTE infr
 4. **Security & Role Scoping**:
    - Only authorized leadership roles (`BUREAU_OFFICER`, `REGIONAL_DIR`, `SYS_ADMIN`) are permitted to initiate cross-system reconciliation.
    - Institutional administrators (`INST_ADMIN`) are restricted to viewing their own institution's sync provenance.
+
