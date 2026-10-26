@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.config import settings
-from backend.app.core.database import engine, Base
+from backend.app.core.database import engine, Base, SessionLocal
 from backend.app.models import *  # Import all models to register with Base
 from backend.app.api.health import router as health_router
 from backend.app.api.auth import router as auth_router
@@ -19,13 +19,29 @@ from backend.app.api.bottlenecks import router as bottlenecks_router
 from backend.app.api.audit import router as audit_router
 from backend.app.api.integrations import router as integrations_router
 from backend.app.api.users import router as users_router
+from backend.app.core.migrations import run_schema_migrations
+from backend.app.middleware.observability import ObservabilityMiddleware
+from backend.app.services.scheduler import scheduler_service
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     os.makedirs(settings.STORAGE_DIR, exist_ok=True)
     Base.metadata.create_all(bind=engine)
+    run_schema_migrations()
+    
+    # Check for missed background jobs on startup
+    try:
+        with SessionLocal() as db:
+            scheduler_service.check_missed_jobs_and_recover(db)
+    except Exception as e:
+        import logging
+        logging.getLogger("setu").warning(f"Initial job recovery check warning: {e}")
+
+    # Start background scheduler
+    scheduler_service.start()
     yield
+    scheduler_service.stop()
 
 
 app = FastAPI(
@@ -37,6 +53,9 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
     lifespan=lifespan
 )
+
+# Observability and Security Headers Middleware
+app.add_middleware(ObservabilityMiddleware)
 
 # CORS configuration
 app.add_middleware(
@@ -73,4 +92,3 @@ def root():
         "docs_url": "/api/docs",
         "health_check": "/health"
     }
-

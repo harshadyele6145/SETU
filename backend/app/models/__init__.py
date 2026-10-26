@@ -1,5 +1,5 @@
 from backend.app.core.database import Base
-from backend.app.models.base import BaseModel
+from backend.app.models.base import BaseModel, DataProvenanceMixin
 from backend.app.models.region import Region
 from backend.app.models.institution import Institution
 from backend.app.models.user import User
@@ -12,10 +12,12 @@ from backend.app.models.alert import Alert
 from backend.app.models.notification import NotificationOutbox
 from backend.app.models.audit import AuditEvent
 from backend.app.models.settings import SystemSetting
+from backend.app.models.job import JobExecution
 
 __all__ = [
     "Base",
     "BaseModel",
+    "DataProvenanceMixin",
     "Region",
     "Institution",
     "User",
@@ -32,5 +34,6 @@ __all__ = [
     "NotificationOutbox",
     "AuditEvent",
     "SystemSetting",
+    "JobExecution",
 ]
 

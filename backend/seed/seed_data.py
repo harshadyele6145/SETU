@@ -75,7 +75,13 @@ def seed_database(db_session=None, generate_alerts: bool = False):
         institutions_map = {}
         for inst_data in institutions_data:
             reg = regions_map[inst_data.pop("region_code")]
-            inst = Institution(region_id=reg.id, **inst_data)
+            inst = Institution(
+                region_id=reg.id,
+                source_system="SYNTHETIC_SEED",
+                is_synthetic=True,
+                sync_status="SYNCED",
+                **inst_data
+            )
             db.add(inst)
             db.flush()
             institutions_map[inst.aicte_id] = inst
@@ -343,7 +349,10 @@ def seed_database(db_session=None, generate_alerts: bool = False):
                 stage_entered_at=stage_date,
                 current_sla_deadline=deadline,
                 is_paused=False,
-                return_count=ret_cnt
+                return_count=ret_cnt,
+                source_system="SYNTHETIC_SEED",
+                is_synthetic=True,
+                sync_status="SYNCED"
             )
             db.add(app)
             db.flush()

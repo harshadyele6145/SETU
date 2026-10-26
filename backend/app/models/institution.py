@@ -1,9 +1,9 @@
 from sqlalchemy import String, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.app.models.base import BaseModel
+from backend.app.models.base import BaseModel, DataProvenanceMixin
 
 
-class Institution(BaseModel):
+class Institution(BaseModel, DataProvenanceMixin):
     __tablename__ = "institutions"
 
     aicte_id: Mapped[str] = mapped_column(String(50), unique=True, index=True)

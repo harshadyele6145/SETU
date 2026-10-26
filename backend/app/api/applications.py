@@ -69,7 +69,11 @@ def format_application_response(app: Application) -> ApplicationResponse:
         is_paused=app.is_paused,
         return_count=app.return_count,
         days_in_stage=days_in_stage,
-        total_days=total_days
+        total_days=total_days,
+        source_system=getattr(app, "source_system", "SETU_OPERATIONAL"),
+        is_synthetic=getattr(app, "is_synthetic", False),
+        synced_at=getattr(app, "synced_at", None),
+        sync_status=getattr(app, "sync_status", "SYNCED"),
     )
 
 
@@ -623,6 +627,8 @@ def get_application_accountability(
         holding_responsible_role=holding_responsible_role,
         assigned_officer_name=app.assigned_officer.full_name if app.assigned_officer else None,
         return_count=app.return_count,
+        source_system=getattr(app, "source_system", "SETU_OPERATIONAL"),
+        is_synthetic=getattr(app, "is_synthetic", False),
         current_user_role=current_user.role,
         current_user_can_act=user_can_act,
         permitted_next_actions=permitted_actions,

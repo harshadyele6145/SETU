@@ -6,8 +6,15 @@ from sqlalchemy.orm import Session
 from backend.app.core.database import get_db
 from backend.app.models.user import User
 from backend.app.services.auth_service import get_current_user
-from backend.app.adapters.external_portal import mock_portal_adapter, SyncResult, IntegrationHealthStatus, ExternalInstitutionProfile
+from backend.app.adapters.external_portal import (
+    mock_portal_adapter,
+    SyncResult,
+    IntegrationHealthStatus,
+    ExternalInstitutionProfile
+)
 from backend.app.services.audit_service import audit_service
+from backend.app.services.integration_service import integration_service
+from backend.app.core.security import UserRole
 
 router = APIRouter(prefix="/api/integrations", tags=["AICTE External Portal Integration"])
 
@@ -58,6 +65,65 @@ def get_adapter_status(current_user: User = Depends(get_current_user)):
     }
 
 
+@router.get("/providers")
+def get_registered_providers(current_user: User = Depends(get_current_user)):
+    """Returns telemetry and operational status for all registered integration providers."""
+    return {
+        "providers": integration_service.get_providers_status()
+    }
+
+
+@router.get("/provenance")
+def get_data_provenance_summary(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Returns cryptographic data provenance breakdown (Category A vs Category B vs Category C)."""
+    return integration_service.get_provenance_breakdown(db=db)
+
+
+@router.post("/sync-open-data")
+def sync_public_open_data(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Synchronizes official public reference data (Category B: AICTE_ONOD_PUBLIC).
+    Authorized for leadership & administrative roles.
+    """
+    authorized_roles = {
+        UserRole.BUREAU_OFFICER.value,
+        UserRole.BO_OFFICER.value,
+        UserRole.REGIONAL_DIR.value,
+        UserRole.SYS_ADMIN.value,
+        "SUPER_ADMIN"
+    }
+    if current_user.role not in authorized_roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Unauthorized. Only Bureau Officers, Regional Directors, or System Administrators may trigger cross-system master data synchronization."
+        )
+
+    result = integration_service.sync_public_open_data(
+        db=db,
+        actor_id=current_user.id,
+        actor_role=current_user.role
+    )
+
+    log_entry = {
+        "id": f"SYNC-LOG-{int(time.time()*1000) % 1000000:06d}",
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "action": "SYNC_ONOD_PUBLIC_DATA",
+        "status_code": 200,
+        "success": True,
+        "external_ref": "AICTE-ONOD-2026.01",
+        "message": f"Successfully reconciled {result['reconciled_count']} public reference institutions."
+    }
+    SYNC_HISTORY.append(log_entry)
+
+    return result
+
+
 @router.post("/toggle-failure")
 def toggle_adapter_failure(
     payload: ToggleFailureRequest,
@@ -89,10 +155,10 @@ def test_push_decision(
     payload: PushDecisionRequest,
     current_user: User = Depends(get_current_user)
 ):
-    result = mock_portal_adapter.push_approval_decision(
+    result = integration_service.push_approval_decision(
         application_no=payload.application_no,
         decision=payload.decision,
-        comments=payload.comments
+        comments=payload.comments or "Workflow determination push."
     )
     
     # Record in telemetry
@@ -118,7 +184,7 @@ def fetch_institution_profile(
     current_user: User = Depends(get_current_user)
 ):
     try:
-        profile = mock_portal_adapter.fetch_institution_profile(aicte_id=aicte_id)
+        profile = integration_service.fetch_institution_profile(aicte_id=aicte_id)
         
         log_entry = {
             "id": f"SYNC-LOG-{int(time.time()*1000) % 1000000:06d}",
@@ -129,7 +195,7 @@ def fetch_institution_profile(
             "status_code": 200,
             "success": True,
             "external_ref": f"AIC-PROFILE-{aicte_id}",
-            "message": "Successfully fetched from mock gateway."
+            "message": "Successfully fetched institutional profile."
         }
         SYNC_HISTORY.append(log_entry)
         return profile
@@ -152,8 +218,8 @@ def fetch_institution_profile(
 @router.get("/prerequisites")
 def get_integration_prerequisites(current_user: User = Depends(get_current_user)):
     return {
-        "status": "PROTOTYPE_SIMULATION_ACTIVE",
-        "disclaimer": "Live integration with production AICTE systems requires formal clearance, MoUs, and approved API keys. SETU uses an ExternalPortalAdapter boundary.",
+        "status": "DUAL_PROVIDER_ACTIVE",
+        "disclaimer": "Live integration with production AICTE systems requires formal clearance, MoUs, and approved API keys. SETU uses BaseIntegrationProvider architecture cleanly separating Category A (Synthetic), Category B (Public Reference), and Category C (Operational).",
         "prerequisites": [
             {
                 "id": "PR-01",
@@ -171,7 +237,7 @@ def get_integration_prerequisites(current_user: User = Depends(get_current_user)
                 "id": "PR-03",
                 "title": "Idempotent Synchronous & Asynchronous Webhooks",
                 "status": "ADAPTER_CONTRACT_DEFINED",
-                "description": "SETU ExternalPortalAdapter defines strict SHA-256 idempotency keys preventing dual ingestion."
+                "description": "SETU BaseIntegrationProvider defines strict SHA-256 idempotency keys preventing dual ingestion."
             },
             {
                 "id": "PR-04",
@@ -183,7 +249,7 @@ def get_integration_prerequisites(current_user: User = Depends(get_current_user)
                 "id": "PR-05",
                 "title": "Data Privacy & Data Sharing Governance",
                 "status": "DPDP_ACT_COMPLIANT",
-                "description": "Only authorized officer roles (Bureau Officer, Competent Authority) can trigger cross-system synchronization."
+                "description": "Only authorized officer roles (Bureau Officer, Regional Director, Admin) can trigger cross-system synchronization."
             }
         ]
     }

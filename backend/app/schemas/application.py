@@ -60,6 +60,10 @@ class ApplicationResponse(BaseModel):
     return_count: int = 0
     days_in_stage: int = 0
     total_days: int = 0
+    source_system: Optional[str] = "SETU_OPERATIONAL"
+    is_synthetic: Optional[bool] = False
+    synced_at: Optional[datetime] = None
+    sync_status: Optional[str] = "SYNCED"
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -107,6 +111,8 @@ class ApplicationAccountabilityResponse(BaseModel):
     holding_responsible_role: str
     assigned_officer_name: Optional[str] = None
     return_count: int = 0
+    source_system: Optional[str] = "SETU_OPERATIONAL"
+    is_synthetic: Optional[bool] = False
     current_user_role: str
     current_user_can_act: bool
     permitted_next_actions: List[PermittedAction] = []

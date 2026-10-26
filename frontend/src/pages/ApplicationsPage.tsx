@@ -9,6 +9,7 @@ import {
   Send
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { DataTrustBadge } from '../components/DataTrustBadge';
 
 interface ApplicationItem {
   id: string;
@@ -26,6 +27,8 @@ interface ApplicationItem {
   total_days: number;
   return_count: number;
   current_sla_deadline: string | null;
+  source_system?: string;
+  is_synthetic?: boolean;
 }
 
 export const ApplicationsPage: React.FC = () => {
@@ -244,7 +247,10 @@ export const ApplicationsPage: React.FC = () => {
                 {filteredApps.map((app) => (
                   <tr key={app.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-3 px-4">
-                      <div className="font-mono font-bold text-slate-900">{app.application_no}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-slate-900">{app.application_no}</span>
+                        <DataTrustBadge sourceSystem={app.source_system} isSynthetic={app.is_synthetic} compact />
+                      </div>
                       <div className="text-[11px] text-slate-500">{app.application_type} ({app.academic_year})</div>
                       {app.return_count > 0 && (
                         <span className="inline-flex items-center text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded mt-0.5">

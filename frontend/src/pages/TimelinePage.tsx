@@ -14,6 +14,7 @@ import {
   Activity
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { DataTrustBadge } from '../components/DataTrustBadge';
 
 interface HistoryItem {
   id: string;
@@ -38,6 +39,8 @@ interface ApplicationDetail {
   current_stage_name: string;
   days_in_stage: number;
   total_days: number;
+  source_system?: string;
+  is_synthetic?: boolean;
   history: HistoryItem[];
 }
 
@@ -80,6 +83,8 @@ interface ApplicationAccountability {
   holding_responsible_role: string;
   assigned_officer_name: string | null;
   return_count: number;
+  source_system?: string;
+  is_synthetic?: boolean;
   current_user_role: string;
   current_user_can_act: boolean;
   permitted_next_actions: PermittedActionItem[];
@@ -511,9 +516,15 @@ export const TimelinePage: React.FC = () => {
                 <span className="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded border">
                   {appDetail.route}
                 </span>
-                <h3 className="text-lg font-bold text-slate-900 font-mono mt-1">
-                  {appDetail.application_no}
-                </h3>
+                <div className="flex items-center gap-2 mt-1">
+                  <h3 className="text-lg font-bold text-slate-900 font-mono">
+                    {appDetail.application_no}
+                  </h3>
+                  <DataTrustBadge
+                    sourceSystem={appDetail.source_system || accountability?.source_system}
+                    isSynthetic={appDetail.is_synthetic ?? accountability?.is_synthetic}
+                  />
+                </div>
                 <p className="text-xs text-slate-600">
                   {appDetail.institution_name} &bull; {appDetail.region_name}
                 </p>

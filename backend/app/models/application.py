@@ -1,10 +1,10 @@
 from datetime import datetime
 from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.app.models.base import BaseModel, utc_now
+from backend.app.models.base import BaseModel, DataProvenanceMixin, utc_now
 
 
-class Application(BaseModel):
+class Application(BaseModel, DataProvenanceMixin):
     __tablename__ = "applications"
 
     application_no: Mapped[str] = mapped_column(String(50), unique=True, index=True)
