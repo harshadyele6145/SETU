@@ -204,7 +204,37 @@
 
 ---
 
-## 10. Final Status and Deliverables Summary
+## 10. Judge-Impact Improvement Sprint & Case Accountability Feature (Delivered & Verified)
+- **Case Accountability & Handoff View (`GET /api/applications/{id}/accountability`)**:
+  - Distinctive visual banner isolating holding party: "Waiting on Institution" vs "Waiting on AICTE Internal".
+  - Exact SLA countdown, stage age, deadline, and overdue badge in Indian Standard Time (IST).
+  - Explicit action authority indicator: "Authorized to Execute Next Action" vs "Observer Mode (Role Restricted)".
+  - Candidate permitted statutory actions for the current stage with one-click modal execution.
+  - Transparent attention engine scoring factor breakdown and active statutory undertakings/blockers.
+  - Direct SHA-256 cryptographic audit block link anchor.
+- **Workflow & Data Isolation Hardening**:
+  - Fixed Bottleneck Cockpit holding categorization: deficiency return stages (`SCRUTINY_DEFICIENT`, `DEFICIENCY_COMMUNICATED`) correctly attribute responsibility to `WAITING_ON_INSTITUTION`.
+  - Added missing-scope safety and committee member assignment filtering to both `AttentionService` and `BottleneckService`.
+  - Enforced server-side transition checks in `WorkflowEngine` preventing unauthorized submissions, returns, resubmissions, and officer reassignments.
+- **Persona & Seeding Alignment**:
+  - Expanded `seed_data.py` to seed all 14 demo accounts with canonical role names and aliases (`REGIONAL_DIR`, `BUREAU_OFFICER`, `COMMITTEE_MBR`, `COMP_REV`).
+  - Seeded initial `EVCVisit` and `EVCExpert` records for Route B and Route D applications so EVC Coordinator and Committee Member personas work out-of-the-box in evaluation demos.
+  - Aligned `DEMO_USERS` in `AuthContext.tsx` and removed hardcoded localhost URLs across frontend pages.
+- **Automated Regression Suite Expansion**:
+  - Authored `backend/tests/test_security_boundaries.py` (6 tests) covering submission security, deficiency return rules, reassignment permissions, committee member visit scoping, and accountability contracts.
+  - Full automated test suite expanded to **54 passing tests** (100% pass rate).
+  - Frontend production build verified (`npm run build --prefix frontend`).
+
+| Command Executed | Purpose | Result |
+|---|---|---|
+| `pytest backend/tests/test_security_boundaries.py` | Security boundaries & accountability regression tests | Exit 0 (6 passed in 7.57s) |
+| `pytest -q backend/tests` | Run complete backend automated test suite | Exit 0 (54 passed in 35.52s) |
+| `python backend/seed/reset_and_seed.py` | Reset DB and seed synthetic data + EVC visits | Exit 0 (26 apps, 14 users, 35 alerts, hash chain verified) |
+| `npm run build --prefix frontend` | Compile production frontend bundle | Exit 0 (Success, 0 errors, dist generated) |
+
+---
+
+## 11. Final Status and Deliverables Summary
 - **Backend**: FastAPI modular architecture with 12 API routers, 11 service domains, 48 passing automated tests.
 - **Frontend**: React 18, TypeScript, Tailwind CSS, Recharts, 14 production pages compiled to `dist/`.
 - **Database**: PostgreSQL / SQLite with 14 relational tables, foreign key constraints, indexes, and sequential cryptographic audit hash chaining.

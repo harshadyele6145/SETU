@@ -63,16 +63,16 @@ ROUTE_TRANSITIONS: Dict[str, Dict[str, List[str]]] = {
 # Role permissions required to transition into/out of specific stages
 STAGE_ROLE_PERMISSIONS: Dict[str, List[str]] = {
     "SUBMITTED": [UserRole.INST_ADMIN.value],
-    "UNDER_SCRUTINY": [UserRole.RO_OFFICER.value, UserRole.BO_OFFICER.value, UserRole.COMM_MEMBER.value, UserRole.INST_ADMIN.value],
-    "SCRUTINY_DEFICIENT": [UserRole.RO_OFFICER.value, UserRole.BO_OFFICER.value, UserRole.COMM_MEMBER.value],
-    "SCRUTINY_RECOMMENDED": [UserRole.RO_OFFICER.value, UserRole.BO_OFFICER.value],
-    "EVC_QUEUE": [UserRole.RO_OFFICER.value, UserRole.BO_OFFICER.value],
-    "EVC_SCHEDULED": [UserRole.EVC_COORD.value, UserRole.BO_OFFICER.value],
-    "EVC_COMPLETED": [UserRole.EVC_COORD.value, UserRole.COMM_MEMBER.value],
-    "EVC_REPORT_SUBMITTED": [UserRole.EVC_COORD.value, UserRole.COMM_MEMBER.value],
-    "SHC_QUEUE": [UserRole.BO_OFFICER.value, UserRole.COMM_MEMBER.value],
-    "SAC_APPEAL": [UserRole.BO_OFFICER.value, UserRole.COMM_MEMBER.value, UserRole.INST_ADMIN.value],
-    "DECISION_PENDING": [UserRole.RO_OFFICER.value, UserRole.BO_OFFICER.value, UserRole.COMM_MEMBER.value],
+    "UNDER_SCRUTINY": [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.BO_OFFICER.value, UserRole.BUREAU_OFFICER.value, UserRole.COMM_MEMBER.value, UserRole.COMMITTEE_MBR.value, UserRole.INST_ADMIN.value],
+    "SCRUTINY_DEFICIENT": [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.BO_OFFICER.value, UserRole.BUREAU_OFFICER.value, UserRole.COMM_MEMBER.value, UserRole.COMMITTEE_MBR.value],
+    "SCRUTINY_RECOMMENDED": [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.BO_OFFICER.value, UserRole.BUREAU_OFFICER.value],
+    "EVC_QUEUE": [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.BO_OFFICER.value, UserRole.BUREAU_OFFICER.value],
+    "EVC_SCHEDULED": [UserRole.EVC_COORD.value, UserRole.BO_OFFICER.value, UserRole.BUREAU_OFFICER.value],
+    "EVC_COMPLETED": [UserRole.EVC_COORD.value, UserRole.COMM_MEMBER.value, UserRole.COMMITTEE_MBR.value],
+    "EVC_REPORT_SUBMITTED": [UserRole.EVC_COORD.value, UserRole.COMM_MEMBER.value, UserRole.COMMITTEE_MBR.value],
+    "SHC_QUEUE": [UserRole.BO_OFFICER.value, UserRole.BUREAU_OFFICER.value, UserRole.COMM_MEMBER.value, UserRole.COMMITTEE_MBR.value],
+    "SAC_APPEAL": [UserRole.BO_OFFICER.value, UserRole.BUREAU_OFFICER.value, UserRole.COMM_MEMBER.value, UserRole.COMMITTEE_MBR.value, UserRole.INST_ADMIN.value],
+    "DECISION_PENDING": [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.BO_OFFICER.value, UserRole.BUREAU_OFFICER.value, UserRole.COMM_MEMBER.value, UserRole.COMMITTEE_MBR.value],
     "APPROVED": [UserRole.COMP_AUTH.value],  # Invariant: ONLY Competent Authority
     "REJECTED": [UserRole.COMP_AUTH.value],  # Invariant: ONLY Competent Authority
 }
@@ -145,6 +145,11 @@ class WorkflowEngine:
         if not app:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
 
+        if actor.role != UserRole.INST_ADMIN.value:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Security violation: Only an authorized Institution Administrator can submit an application."
+            )
         enforce_institution_scope(actor, app.institution_id)
 
         if app.status != "DRAFT":
@@ -207,8 +212,19 @@ class WorkflowEngine:
         # 1. Scoping checks
         if actor.role == UserRole.INST_ADMIN.value:
             enforce_institution_scope(actor, app.institution_id)
-        elif actor.role == UserRole.RO_OFFICER.value:
+        elif actor.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]:
             enforce_region_scope(actor, app.region_id)
+        elif actor.role in [UserRole.COMM_MEMBER.value, UserRole.COMMITTEE_MBR.value]:
+            from backend.app.models.evc import EVCVisit, EVCExpert
+            is_assigned = db.query(EVCVisit).join(EVCExpert).filter(
+                EVCVisit.application_id == app.id,
+                EVCExpert.contact_email == actor.email
+            ).first() is not None
+            if not is_assigned:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Security violation: Committee members can only transition applications assigned to their inspection visits."
+                )
 
         # 2. Statutory decision safeguard
         if target_stage_key in ("APPROVED", "REJECTED"):
@@ -293,10 +309,35 @@ class WorkflowEngine:
         if not app:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
 
-        if actor.role == UserRole.RO_OFFICER.value:
-            enforce_region_scope(actor, app.region_id)
-
         target_stage_key = "SCRUTINY_DEFICIENT"
+        allowed_review_roles = [
+            UserRole.RO_OFFICER.value,
+            UserRole.REGIONAL_DIR.value,
+            UserRole.BO_OFFICER.value,
+            UserRole.BUREAU_OFFICER.value,
+            UserRole.COMM_MEMBER.value,
+            UserRole.COMMITTEE_MBR.value,
+            UserRole.SYS_ADMIN.value
+        ]
+        if actor.role not in allowed_review_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Unauthorized: Role {actor.role} is not permitted to return applications for deficiency."
+            )
+
+        if actor.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value]:
+            enforce_region_scope(actor, app.region_id)
+        elif actor.role in [UserRole.COMM_MEMBER.value, UserRole.COMMITTEE_MBR.value]:
+            from backend.app.models.evc import EVCVisit, EVCExpert
+            is_assigned = db.query(EVCVisit).join(EVCExpert).filter(
+                EVCVisit.application_id == app.id,
+                EVCExpert.contact_email == actor.email
+            ).first() is not None
+            if not is_assigned:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Security violation: Committee members can only return applications assigned to their inspection visits."
+                )
         target_stage = cls.get_stage_by_key(db, app.route, target_stage_key)
         if not target_stage:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Stage {target_stage_key} not configured in route {app.route}")
@@ -349,6 +390,11 @@ class WorkflowEngine:
         if not app:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
 
+        if actor.role != UserRole.INST_ADMIN.value:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Security violation: Only the authorized Institution Administrator can resubmit clarification responses."
+            )
         enforce_institution_scope(actor, app.institution_id)
 
         if app.status != "SCRUTINY_DEFICIENT":
@@ -410,7 +456,20 @@ class WorkflowEngine:
         if not app:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
 
-        if actor.role == UserRole.RO_OFFICER.value:
+        allowed_reassign_roles = [
+            UserRole.RO_OFFICER.value,
+            UserRole.REGIONAL_DIR.value,
+            UserRole.BO_OFFICER.value,
+            UserRole.BUREAU_OFFICER.value,
+            UserRole.SYS_ADMIN.value
+        ]
+        if actor.role not in allowed_reassign_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Security violation: Role {actor.role} is not authorized to reassign case officers."
+            )
+
+        if actor.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value]:
             enforce_region_scope(actor, app.region_id)
 
         officer = db.get(User, officer_id)

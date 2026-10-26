@@ -6,6 +6,7 @@ from sqlalchemy import desc
 from backend.app.models.application import Application
 from backend.app.models.compliance import ComplianceObligation
 from backend.app.models.document import DocumentRegistry
+from backend.app.models.evc import EVCVisit, EVCExpert
 from backend.app.models.user import User
 from backend.app.models.base import utc_now
 from backend.app.schemas.attention import BottleneckItem, BottleneckSummary
@@ -18,16 +19,43 @@ class BottleneckService:
         Bottleneck & Exception Cockpit:
         Isolates stalled items and clearly categorizes them by holding responsibility:
         'Waiting on Institution' vs 'Waiting on AICTE Internal'.
+        Strictly scopes by user role, institution, region, and committee assignment.
         """
+        empty_summary = BottleneckSummary(
+            total_exceptions=0,
+            waiting_on_institution=0,
+            waiting_on_aicte=0,
+            overdue_count=0,
+            critical_escalations=0,
+            items=[]
+        )
+
         now = utc_now()
         items: List[BottleneckItem] = []
 
         # 1. Applications Query (Scoped)
         app_q = db.query(Application).filter(Application.status.notin_(["APPROVED", "REJECTED"]))
+        assigned_app_ids: List[str] = []
+
         if user.role == "INST_ADMIN":
+            if not user.institution_id:
+                return empty_summary
             app_q = app_q.filter(Application.institution_id == user.institution_id)
-        elif user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"] and user.region_id:
+        elif user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"]:
+            if not user.region_id:
+                return empty_summary
             app_q = app_q.filter(Application.region_id == user.region_id)
+        elif user.role in ["COMM_MEMBER", "COMMITTEE_MBR"]:
+            assigned_app_ids = [
+                row[0]
+                for row in db.query(EVCVisit.application_id)
+                .join(EVCExpert, EVCExpert.visit_id == EVCVisit.id)
+                .filter(EVCExpert.contact_email == user.email)
+                .all()
+            ]
+            if not assigned_app_ids:
+                return empty_summary
+            app_q = app_q.filter(Application.id.in_(assigned_app_ids))
 
         apps = app_q.all()
 
@@ -39,11 +67,11 @@ class BottleneckService:
             is_overdue = days_remaining < 0
 
             # Determine holding side and permissible bypass action
-            if a.status in ["DRAFT", "PENDING_CLARIFICATION"]:
+            if a.status in ["DRAFT", "PENDING_CLARIFICATION", "SCRUTINY_DEFICIENT", "DEFICIENCY_COMMUNICATED"]:
                 holding = "WAITING_ON_INSTITUTION"
                 resp = "Institution Administrator"
-                blocker = f"Application pending institutional response for {age_days} days."
-                next_action = "Upload requested clarification documents and commit resubmission."
+                blocker = f"Application pending institutional response / deficiency cure for {age_days} days."
+                next_action = "Upload requested clarification/deficiency documents and commit resubmission."
             else:
                 holding = "WAITING_ON_AICTE"
                 resp = "Regional Office / Bureau"
@@ -55,7 +83,7 @@ class BottleneckService:
             )
 
             # Filter exceptions: only items with age > 3 days or pending clarification or overdue
-            if age_days >= 3 or a.status == "PENDING_CLARIFICATION" or is_overdue:
+            if age_days >= 3 or a.status in ["PENDING_CLARIFICATION", "SCRUTINY_DEFICIENT", "DEFICIENCY_COMMUNICATED"] or is_overdue:
                 items.append(BottleneckItem(
                     id=a.id,
                     case_type="APPLICATION",
@@ -77,8 +105,13 @@ class BottleneckService:
         ob_q = db.query(ComplianceObligation).filter(ComplianceObligation.status.notin_(["VERIFIED", "CLOSED"]))
         if user.role == "INST_ADMIN":
             ob_q = ob_q.filter(ComplianceObligation.institution_id == user.institution_id)
-        elif user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"] and user.region_id:
+        elif user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"]:
             ob_q = ob_q.filter(ComplianceObligation.institution.has(region_id=user.region_id))
+        elif user.role in ["COMM_MEMBER", "COMMITTEE_MBR"]:
+            if assigned_app_ids:
+                ob_q = ob_q.filter(ComplianceObligation.application_id.in_(assigned_app_ids))
+            else:
+                ob_q = ob_q.filter(False)
 
         obs = ob_q.all()
         for o in obs:

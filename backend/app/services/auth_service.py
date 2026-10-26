@@ -55,7 +55,7 @@ def enforce_institution_scope(current_user: User, institution_id: str) -> None:
     they can strictly and only access/mutate records belonging to their assigned institution.
     """
     if current_user.role == UserRole.INST_ADMIN.value:
-        if str(current_user.institution_id) != str(institution_id):
+        if not current_user.institution_id or str(current_user.institution_id) != str(institution_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Security violation: You are not authorized to view or modify records of another institution."
@@ -64,11 +64,11 @@ def enforce_institution_scope(current_user: User, institution_id: str) -> None:
 
 def enforce_region_scope(current_user: User, region_id: str) -> None:
     """
-    Backend-enforced boundary: Regional Officers can only access/act upon cases
+    Backend-enforced boundary: Regional Officers and Directors can only access/act upon cases
     belonging to their designated geographic region.
     """
-    if current_user.role == UserRole.RO_OFFICER.value:
-        if str(current_user.region_id) != str(region_id):
+    if current_user.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]:
+        if not current_user.region_id or str(current_user.region_id) != str(region_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Security violation: Regional Officer cannot access or modify cases outside their designated Region."

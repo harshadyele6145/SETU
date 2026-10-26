@@ -252,3 +252,4 @@ def test_dashboard_counts_match_scoped_list_endpoints(client: TestClient, db_ses
     assert ro_stats["summary"]["total_applications"] == len(ro_apps)
     assert ro_stats["compliance_health"]["total"] == len(ro_obs)
     assert ro_stats["document_health"]["total"] == len(ro_docs)
+

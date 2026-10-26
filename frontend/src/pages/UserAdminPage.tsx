@@ -117,10 +117,10 @@ export const UserAdminPage: React.FC = () => {
     try {
       setLoading(true);
       const [uRes, rRes] = await Promise.all([
-        fetch('http://localhost:8000/api/users', {
+        fetch('/api/users', {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        fetch('http://localhost:8000/api/users/roles', {
+        fetch('/api/users/roles', {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);

@@ -21,16 +21,20 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const DEMO_USERS = [
-  { email: 'inst_admin@fictional-nist.edu.in', role: 'INST_ADMIN', name: 'Dr. R. K. Verma', label: 'Inst Admin (North)' },
-  { email: 'inst_admin2@fictional-poly.org', role: 'INST_ADMIN', name: 'Prof. S. M. Patil', label: 'Inst Admin (West)' },
-  { email: 'ro_north@aicte.gov.in', role: 'RO_OFFICER', name: 'Dr. Arun Mehra', label: 'Regional Officer (North)' },
-  { email: 'ro_west@aicte.gov.in', role: 'RO_OFFICER', name: 'Smt. Sunita Deshmukh', label: 'Regional Officer (West)' },
-  { email: 'bo_officer@aicte.gov.in', role: 'BO_OFFICER', name: 'Shri Vikramaditya Sen', label: 'Bureau Officer' },
-  { email: 'evc_coord@aicte.gov.in', role: 'EVC_COORD', name: 'Dr. Preeti Saxena', label: 'EVC Coordinator' },
-  { email: 'comm_member@aicte.gov.in', role: 'COMM_MEMBER', name: 'Prof. H. S. Murthy', label: 'Committee Member' },
-  { email: 'comp_review@aicte.gov.in', role: 'COMP_REVIEW', name: 'Shri Rajeshwar Rao', label: 'Compliance Reviewer' },
-  { email: 'comp_auth@aicte.gov.in', role: 'COMP_AUTH', name: 'Member Secretary (AICTE)', label: 'Competent Authority' },
-  { email: 'sys_admin@aicte.gov.in', role: 'SYS_ADMIN', name: 'Administrator', label: 'System Admin' },
+  { email: 'inst_admin@fictional-nist.edu.in', role: 'INST_ADMIN', name: 'Dr. R. K. Verma', label: 'Inst Admin (North - NIST)' },
+  { email: 'inst_admin2@fictional-poly.org', role: 'INST_ADMIN', name: 'Prof. S. M. Patil', label: 'Inst Admin (West - Poly)' },
+  { email: 'ro_north@aicte.gov.in', role: 'RO_OFFICER', name: 'Dr. Arun Mehra', label: 'Regional Officer (RO North)' },
+  { email: 'ro_west_dir@aicte.gov.in', role: 'REGIONAL_DIR', name: 'Dr. S. K. Mahajan', label: 'Regional Director (RO West)' },
+  { email: 'ro_west@aicte.gov.in', role: 'RO_OFFICER', name: 'Smt. Sunita Deshmukh', label: 'Regional Officer (RO West)' },
+  { email: 'bureau_officer@aicte.gov.in', role: 'BUREAU_OFFICER', name: 'Dr. Meenakshi Sundaram', label: 'Bureau Officer (HQ)' },
+  { email: 'bo_officer@aicte.gov.in', role: 'BO_OFFICER', name: 'Shri Vikramaditya Sen', label: 'Bureau Officer (Legacy)' },
+  { email: 'evc_coord@aicte.gov.in', role: 'EVC_COORD', name: 'Dr. Preeti Saxena', label: 'EVC Coordinator (North)' },
+  { email: 'expert1@aicte-roster.ac.in', role: 'COMMITTEE_MBR', name: 'Dr. Sunita Deshmukh', label: 'Committee Member (IIT Bombay)' },
+  { email: 'comm_member@aicte.gov.in', role: 'COMM_MEMBER', name: 'Prof. H. S. Murthy', label: 'Committee Member (IISc)' },
+  { email: 'compliance_reviewer@aicte.gov.in', role: 'COMP_REV', name: 'Shri Vikramaditya Rao', label: 'Compliance Reviewer' },
+  { email: 'comp_review@aicte.gov.in', role: 'COMP_REVIEW', name: 'Shri Rajeshwar Rao', label: 'Compliance Reviewer (Legacy)' },
+  { email: 'comp_auth@aicte.gov.in', role: 'COMP_AUTH', name: 'Member Secretary (AICTE)', label: 'Competent Authority (Council)' },
+  { email: 'sys_admin@aicte.gov.in', role: 'SYS_ADMIN', name: 'Administrator', label: 'System Admin (Tech Ops)' },
 ];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

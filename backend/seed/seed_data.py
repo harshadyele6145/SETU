@@ -111,9 +111,21 @@ def seed_database(db_session=None, generate_alerts: bool = False):
                 "region_id": regions_map["RO_WEST"].id,
             },
             {
+                "email": "ro_west_dir@aicte.gov.in",
+                "full_name": "Dr. S. K. Mahajan (Regional Director West)",
+                "role": UserRole.REGIONAL_DIR.value,
+                "region_id": regions_map["RO_WEST"].id,
+            },
+            {
                 "email": "bo_officer@aicte.gov.in",
                 "full_name": "Shri Vikramaditya Sen (Bureau Officer)",
                 "role": UserRole.BO_OFFICER.value,
+                "region_id": None,
+            },
+            {
+                "email": "bureau_officer@aicte.gov.in",
+                "full_name": "Dr. Meenakshi Sundaram (Bureau Officer)",
+                "role": UserRole.BUREAU_OFFICER.value,
                 "region_id": None,
             },
             {
@@ -129,9 +141,21 @@ def seed_database(db_session=None, generate_alerts: bool = False):
                 "region_id": None,
             },
             {
+                "email": "expert1@aicte-roster.ac.in",
+                "full_name": "Dr. Sunita Deshmukh (Expert Panel Member)",
+                "role": UserRole.COMMITTEE_MBR.value,
+                "region_id": None,
+            },
+            {
                 "email": "comp_review@aicte.gov.in",
                 "full_name": "Shri Rajeshwar Rao (Compliance Reviewer)",
                 "role": UserRole.COMP_REVIEW.value,
+                "region_id": regions_map["RO_NORTH"].id,
+            },
+            {
+                "email": "compliance_reviewer@aicte.gov.in",
+                "full_name": "Shri Vikramaditya Rao (Compliance Reviewer)",
+                "role": UserRole.COMP_REV.value,
                 "region_id": regions_map["RO_NORTH"].id,
             },
             {
@@ -336,6 +360,89 @@ def seed_database(db_session=None, generate_alerts: bool = False):
             db.add(h)
 
         print(f"Created {len(apps_created)} Synthetic Applications across Routes A, B, C, D.")
+
+        # 5b. Seed EVC Visits and Expert Panelists
+        apps_by_no = {app.application_no: app for app in apps_created}
+        if "AICTE-2026-0110" in apps_by_no:
+            app_b = apps_by_no["AICTE-2026-0110"]
+            visit_b = EVCVisit(
+                application_id=app_b.id,
+                status="SCHEDULED",
+                proposed_date=today - timedelta(days=2),
+                confirmed_date=today + timedelta(days=3),
+                coordinator_id=users_map["evc_coord@aicte.gov.in"].id
+            )
+            db.add(visit_b)
+            db.flush()
+
+            exp_b1 = EVCExpert(
+                visit_id=visit_b.id,
+                expert_name="Dr. Sunita Deshmukh",
+                designation="Professor, Mechanical Engg",
+                organization="IIT Bombay",
+                contact_email="expert1@aicte-roster.ac.in",
+                status="ASSIGNED"
+            )
+            exp_b2 = EVCExpert(
+                visit_id=visit_b.id,
+                expert_name="Prof. H. S. Murthy",
+                designation="Professor, Electrical Engg",
+                organization="IISc Bangalore",
+                contact_email="comm_member@aicte.gov.in",
+                status="ASSIGNED"
+            )
+            exp_b3 = EVCExpert(
+                visit_id=visit_b.id,
+                expert_name="Dr. K. R. Raman",
+                designation="Architect & Urban Planner",
+                organization="SPA Delhi",
+                contact_email="expert_architect@aicte-roster.ac.in",
+                status="ASSIGNED"
+            )
+            db.add_all([exp_b1, exp_b2, exp_b3])
+
+        if "AICTE-2026-0123" in apps_by_no:
+            app_d = apps_by_no["AICTE-2026-0123"]
+            visit_d = EVCVisit(
+                application_id=app_d.id,
+                status="SCHEDULED",
+                proposed_date=today - timedelta(days=1),
+                confirmed_date=today + timedelta(days=4),
+                coordinator_id=users_map["evc_coord@aicte.gov.in"].id
+            )
+            db.add(visit_d)
+            db.flush()
+
+            exp_d1 = EVCExpert(
+                visit_id=visit_d.id,
+                expert_name="Dr. Sunita Deshmukh",
+                designation="Professor, Mechanical Engg",
+                organization="IIT Bombay",
+                contact_email="expert1@aicte-roster.ac.in",
+                status="ASSIGNED"
+            )
+            exp_d2 = EVCExpert(
+                visit_id=visit_d.id,
+                expert_name="Prof. H. S. Murthy",
+                designation="Professor, Electrical Engg",
+                organization="IISc Bangalore",
+                contact_email="comm_member@aicte.gov.in",
+                status="ASSIGNED"
+            )
+            db.add_all([exp_d1, exp_d2])
+
+        if "AICTE-2026-0111" in apps_by_no:
+            app_comp = apps_by_no["AICTE-2026-0111"]
+            visit_comp = EVCVisit(
+                application_id=app_comp.id,
+                status="COMPLETED",
+                proposed_date=today - timedelta(days=8),
+                confirmed_date=today - timedelta(days=4),
+                completed_date=today - timedelta(days=4),
+                report_summary="Campus physical verification completed. Land and laboratory setup matches APH norm. Report uploaded.",
+                coordinator_id=users_map["evc_coord@aicte.gov.in"].id
+            )
+            db.add(visit_comp)
 
         # 6. Seed 12+ Compliance Obligations across Institutions
         obligations_data = [

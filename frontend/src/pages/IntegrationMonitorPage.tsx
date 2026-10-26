@@ -49,7 +49,7 @@ export const IntegrationMonitorPage: React.FC = () => {
 
   const fetchStatus = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/integrations/status', {
+      const res = await fetch('/api/integrations/status', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -75,7 +75,7 @@ export const IntegrationMonitorPage: React.FC = () => {
     setActionLoading(true);
     try {
       const newMode = !health.simulated_failure_active;
-      const res = await fetch('http://localhost:8000/api/integrations/toggle-failure', {
+      const res = await fetch('/api/integrations/toggle-failure', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +98,7 @@ export const IntegrationMonitorPage: React.FC = () => {
     setActionLoading(true);
     setTestResult(null);
     try {
-      const res = await fetch('http://localhost:8000/api/integrations/test-push', {
+      const res = await fetch('/api/integrations/test-push', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ export const IntegrationMonitorPage: React.FC = () => {
     setActionLoading(true);
     setTestResult(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/integrations/fetch-institution/${fetchAicteId}`, {
+      const res = await fetch(`/api/integrations/fetch-institution/${fetchAicteId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();

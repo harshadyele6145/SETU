@@ -6,7 +6,7 @@ from sqlalchemy import desc
 from backend.app.models.application import Application
 from backend.app.models.compliance import ComplianceObligation
 from backend.app.models.document import DocumentRegistry
-from backend.app.models.evc import EVCVisit
+from backend.app.models.evc import EVCVisit, EVCExpert
 from backend.app.models.user import User
 from backend.app.models.base import utc_now
 from backend.app.schemas.attention import AttentionQueueItem, AttentionFactor
@@ -18,14 +18,30 @@ class AttentionService:
         """
         Explainable Attention Engine: Deterministic multi-factor scoring algorithm.
         Ranks applications by urgency and generates plain-English diagnostic explanations.
+        Strictly scopes items by user role, institution, region, and committee assignment.
         """
         query = db.query(Application).filter(Application.status.notin_(["APPROVED", "REJECTED"]))
 
         # Apply Scoping
         if user.role == "INST_ADMIN":
+            if not user.institution_id:
+                return []
             query = query.filter(Application.institution_id == user.institution_id)
-        elif user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"] and user.region_id:
+        elif user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"]:
+            if not user.region_id:
+                return []
             query = query.filter(Application.region_id == user.region_id)
+        elif user.role in ["COMM_MEMBER", "COMMITTEE_MBR"]:
+            assigned_ids = [
+                row[0]
+                for row in db.query(EVCVisit.application_id)
+                .join(EVCExpert, EVCExpert.visit_id == EVCVisit.id)
+                .filter(EVCExpert.contact_email == user.email)
+                .all()
+            ]
+            if not assigned_ids:
+                return []
+            query = query.filter(Application.id.in_(assigned_ids))
 
         apps = query.all()
         now = utc_now()
@@ -144,7 +160,7 @@ class AttentionService:
 
             # 5. EVC Visit Pending or Delayed (Weight: 15)
             evc_visit = db.query(EVCVisit).filter(EVCVisit.application_id == a.id).first()
-            if a.status in ["EVC_SCHEDULED", "AWAITING_EVC"]:
+            if a.status in ["EVC_SCHEDULED", "AWAITING_EVC", "EVC_QUEUE"]:
                 if not evc_visit:
                     score += 15
                     factors.append(AttentionFactor(
@@ -183,14 +199,14 @@ class AttentionService:
                 tier = "LOW"
 
             # Determine Responsible Role & Prescriptive Action
-            if a.status == "DRAFT":
+            if a.status in ["DRAFT"]:
                 role = "INST_ADMIN"
                 rec_action = "Complete and formally submit application dossier to initiate AICTE processing."
                 blocker = "Pending institutional submission."
-            elif a.status == "PENDING_CLARIFICATION":
+            elif a.status in ["PENDING_CLARIFICATION", "SCRUTINY_DEFICIENT", "DEFICIENCY_COMMUNICATED"]:
                 role = "INST_ADMIN"
-                rec_action = "Upload requested clarification documents and resubmit application."
-                blocker = "Deficiency notice issued by Scrutiny Committee."
+                rec_action = "Upload requested deficiency clarifications and resubmit application within statutory window."
+                blocker = "Deficiency notice issued by Scrutiny / EVC Committee."
             elif a.status == "SUBMITTED":
                 role = "RO_OFFICER"
                 rec_action = "Assign scrutiny officer and convene Document Scrutiny Committee."
@@ -199,15 +215,19 @@ class AttentionService:
                 role = "RO_OFFICER"
                 rec_action = "Complete verification of physical land deeds, building plans, and statutory affidavits."
                 blocker = "Under active scrutiny examination."
-            elif a.status in ["SCRUTINY_RECOMMENDED", "AWAITING_EVC"]:
+            elif a.status in ["SCRUTINY_RECOMMENDED", "AWAITING_EVC", "EVC_QUEUE"]:
                 role = "EVC_COORD"
                 rec_action = "Constitute 3-member visiting expert committee roster and confirm visit date."
                 blocker = "EVC scheduling pending."
             elif a.status == "EVC_SCHEDULED":
-                role = "EVC_COORD"
+                role = "COMMITTEE_MBR"
                 rec_action = "Conduct on-site campus verification and upload signed inspection report."
                 blocker = "Physical campus inspection in progress."
-            elif a.status in ["SAC_RECOMMENDED", "SHC_SCHEDULED"]:
+            elif a.status in ["EVC_COMPLETED", "EVC_REPORT_SUBMITTED"]:
+                role = "RO_OFFICER"
+                rec_action = "Review EVC inspection findings and formulate statutory recommendation."
+                blocker = "EVC report under regional review."
+            elif a.status in ["SAC_RECOMMENDED", "SHC_SCHEDULED", "DECISION_PENDING"]:
                 role = "COMP_AUTH"
                 rec_action = "Review Standing Appellate Committee recommendations and execute final statutory approval/rejection."
                 blocker = "Pending Competent Authority final determination."

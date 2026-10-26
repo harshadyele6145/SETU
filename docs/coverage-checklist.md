@@ -39,7 +39,7 @@
 - [x] Dynamic dashboard metrics (zero hardcoded counts)
 - [x] Evidence submission distinct from verification (INV-01)
 - [x] Cryptographic audit trail with SHA-256 hash chaining implemented & verified
-- [x] Automated tests executed (48 tests passing across 14 test modules)
+- [x] Automated tests executed (54 tests passing across 15 test modules)
 
 ## Part 5 — Navigation & Design
 - [x] All 15 functional navigation items implemented with role-filtered sidebar
@@ -58,15 +58,16 @@
 - [x] Alert service, multi-channel simulation, idempotency, downtime recovery
 
 ## Part 13 — Innovations (P1 & P2)
+- [x] Case Accountability & Handoff View (`/timeline` & `/api/applications/{id}/accountability`)
 - [x] Explainable Attention Engine (deterministic multi-factor scoring)
 - [x] Bottleneck & Exception Cockpit (isolating AICTE vs. Institution delays)
 - [x] Compliance Dependency View (full relationship navigation)
 - [x] Explainable Case Summarizer (5-question operational briefing)
 
 ## Parts 14 to 20 — Data, Quality & Security
-- [x] Deterministic synthetic seed data (10 institutions, 26 applications, 13 obligations, 10 documents, 35 alerts)
+- [x] Deterministic synthetic seed data (10 institutions, 26 applications, 13 obligations, 10 documents, 35 alerts, 14 users)
 - [x] One-command reset-and-seed script (`python backend/seed/reset_and_seed.py`)
-- [x] Pytest suite covering auth, scopes, transitions, deadlines, alerts, hash-chain, backup-restore, integrations, role dashboards & isolation (48 passed)
+- [x] Pytest suite covering auth, scopes, transitions, deadlines, alerts, hash-chain, backup-restore, integrations, role dashboards & isolation, security boundaries (54 passed in 35s)
 - [x] Local backup and restore script tested (`backend/storage/backup_restore.py` & `docs/backup-restore.md`)
 - [x] Security test results and documentation (`docs/security-test-results.md`)
 - [x] Electronic records retention runbook (`docs/records-and-retention.md`)
