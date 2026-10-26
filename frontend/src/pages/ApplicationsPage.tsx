@@ -288,7 +288,7 @@ export const ApplicationsPage: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-right space-x-1">
                       {/* Permitted contextual action buttons depending on active persona role and stage */}
-                      {user?.role === 'RO_OFFICER' && app.status === 'UNDER_SCRUTINY' && (
+                      {['RO_OFFICER', 'REGIONAL_DIR'].includes(user?.role || '') && app.status === 'UNDER_SCRUTINY' && (
                         <>
                           <button
                             onClick={() => setActionModal({ open: true, app, actionType: 'return' })}

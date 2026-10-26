@@ -40,12 +40,16 @@ def get_compliance_dependency_graph(
     Institution -> Applications -> Compliance Obligations -> Prescribed Documents.
     """
     if current_user.role == "INST_ADMIN":
+        if not current_user.institution_id:
+            return {"nodes": [], "links": []}
         institution_id = current_user.institution_id
 
     query = db.query(Institution)
     if institution_id:
         query = query.filter(Institution.id == institution_id)
-    elif current_user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"] and current_user.region_id:
+    elif current_user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"]:
+        if not current_user.region_id:
+            return {"nodes": [], "links": []}
         query = query.filter(Institution.region_id == current_user.region_id)
 
     institutions = query.limit(10).all()

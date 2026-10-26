@@ -44,10 +44,20 @@ def get_case_structured_summary(
         raise HTTPException(status_code=404, detail="Application not found")
 
     # Scope check
-    if current_user.role == "INST_ADMIN" and app.institution_id != current_user.institution_id:
-        raise HTTPException(status_code=403, detail="Access denied")
-    if current_user.role in ["RO_OFFICER", "REGIONAL_DIR"] and app.region_id != current_user.region_id:
-        raise HTTPException(status_code=403, detail="Access denied")
+    if current_user.role == "INST_ADMIN":
+        if not current_user.institution_id or app.institution_id != current_user.institution_id:
+            raise HTTPException(status_code=403, detail="Access denied: Case outside assigned scope")
+    elif current_user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"]:
+        if not current_user.region_id or app.region_id != current_user.region_id:
+            raise HTTPException(status_code=403, detail="Access denied: Case outside assigned scope")
+    elif current_user.role in ["COMM_MEMBER", "COMMITTEE_MBR"]:
+        from backend.app.models.evc import EVCVisit, EVCExpert
+        is_assigned = db.query(EVCVisit).join(EVCExpert).filter(
+            EVCVisit.application_id == app.id,
+            EVCExpert.contact_email == current_user.email
+        ).first() is not None
+        if not is_assigned:
+            raise HTTPException(status_code=403, detail="Access denied: Case outside assigned scope")
 
     # Trace audit trail events count
     audit_count = len(app.history)

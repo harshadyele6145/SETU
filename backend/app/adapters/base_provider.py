@@ -28,9 +28,11 @@ class SyncResult(BaseModel):
 class IntegrationHealthStatus(BaseModel):
     adapter_name: str
     is_connected: bool
+    is_configured: bool = True
     latency_ms: float
     simulated_failure_active: bool
     data_category: str  # CATEGORY_A_SYNTHETIC, CATEGORY_B_PUBLIC_REFERENCE, CATEGORY_C_REAL_OPERATIONAL
+    last_sync_time: Optional[str] = None
     details: Dict[str, Any]
 
 

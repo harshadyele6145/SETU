@@ -6,6 +6,7 @@ from sqlalchemy import select, desc
 from backend.app.models.evc import EVCVisit, EVCExpert
 from backend.app.models.application import Application
 from backend.app.models.user import User
+from backend.app.core.security import is_role_in
 from backend.app.core.storage import storage_service
 from backend.app.services.audit_service import audit_service
 
@@ -50,12 +51,17 @@ class EVCService:
         user: User
     ) -> EVCVisit:
         # Check permissions
-        if user.role not in ["EVC_COORD", "RO_OFFICER", "BUREAU_OFFICER", "REGIONAL_DIR", "COMP_AUTH", "SYS_ADMIN"]:
+        allowed_roles = ["EVC_COORD", "RO_OFFICER", "BUREAU_OFFICER", "BO_OFFICER", "REGIONAL_DIR", "COMP_AUTH", "SYS_ADMIN"]
+        if not is_role_in(user.role, allowed_roles):
             raise PermissionError("Access denied: You do not have permission to schedule EVC inspections")
 
         app = db.query(Application).filter(Application.id == application_id).first()
         if not app:
             raise ValueError("Application not found")
+
+        # Invariant INV-03: Terminal Decision Immutability
+        if app.status in ("APPROVED", "REJECTED"):
+            raise ValueError(f"Statutory Invariant Violation (INV-03): Cannot schedule EVC visit for application in terminal state '{app.status}'")
 
         # Region scope check
         if user.role in ["RO_OFFICER", "REGIONAL_DIR", "EVC_COORD"]:

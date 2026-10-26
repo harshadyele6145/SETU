@@ -28,6 +28,8 @@ class IntegrationService:
                 "display_name": provider.display_name,
                 "data_category": provider.data_category,
                 "is_connected": health.is_connected,
+                "is_configured": getattr(health, "is_configured", True),
+                "last_sync_time": getattr(health, "last_sync_time", None),
                 "latency_ms": health.latency_ms,
                 "simulated_failure_active": health.simulated_failure_active,
                 "details": health.details
@@ -93,11 +95,17 @@ class IntegrationService:
             "trust_statement": "SETU enforces cryptographic data provenance: Synthetic Seed (Category A), Public Reference (Category B), and Operational (Category C) are transparently partitioned."
         }
 
-    def sync_public_open_data(self, db: Session, actor_id: Optional[str] = None, actor_role: Optional[str] = None) -> Dict[str, Any]:
+    def sync_public_open_data(
+        self,
+        db: Session,
+        actor_id: Optional[str] = None,
+        actor_role: Optional[str] = None,
+        custom_records: Optional[List[Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
         """
         Pulls official public reference institutions from the AICTE Open Data provider.
         """
-        report = aicte_open_data_provider.reconcile_records(db=db)
+        report = aicte_open_data_provider.reconcile_records(db=db, custom_records=custom_records)
 
         # Record audit event
         audit_service.record_event(
@@ -110,8 +118,11 @@ class IntegrationService:
             new_state="SYNC_COMPLETED",
             details={
                 "provider": aicte_open_data_provider.display_name,
-                "reconciled_count": report["reconciled_count"],
-                "skipped_count": report["skipped_count"],
+                "reconciled_count": report.get("reconciled_count", 0),
+                "records_created": report.get("records_created", 0),
+                "records_updated": report.get("records_updated", 0),
+                "skipped_count": report.get("skipped_count", 0),
+                "malformed_count": report.get("malformed_count", 0),
                 "data_category": aicte_open_data_provider.data_category
             }
         )

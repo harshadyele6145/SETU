@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from backend.app.core.database import get_db
-from backend.app.core.security import decode_access_token, UserRole
+from backend.app.core.security import decode_access_token, UserRole, normalize_role, is_role_in
 from backend.app.models.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -37,10 +37,11 @@ def get_current_user(
 
 def require_roles(*allowed_roles: str):
     """
-    Dependency factory checking if the authenticated user has one of the allowed roles.
+    Dependency factory checking if the authenticated user has one of the allowed roles,
+    honoring canonical role normalization and aliases.
     """
     def role_checker(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role not in allowed_roles:
+        if not is_role_in(current_user.role, allowed_roles):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Forbidden: Action requires one of roles {[r for r in allowed_roles]}. Current role: {current_user.role}"
@@ -53,8 +54,9 @@ def enforce_institution_scope(current_user: User, institution_id: str) -> None:
     """
     Backend-enforced boundary: If the user is an Institution Administrator,
     they can strictly and only access/mutate records belonging to their assigned institution.
+    Missing tenant scope fails closed.
     """
-    if current_user.role == UserRole.INST_ADMIN.value:
+    if normalize_role(current_user.role) == UserRole.INST_ADMIN.value:
         if not current_user.institution_id or str(current_user.institution_id) != str(institution_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -64,10 +66,12 @@ def enforce_institution_scope(current_user: User, institution_id: str) -> None:
 
 def enforce_region_scope(current_user: User, region_id: str) -> None:
     """
-    Backend-enforced boundary: Regional Officers and Directors can only access/act upon cases
-    belonging to their designated geographic region.
+    Backend-enforced boundary: Regional Officers, Directors, and EVC Coordinators can only
+    access/act upon cases belonging to their designated geographic region.
+    Missing region scope fails closed.
     """
-    if current_user.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]:
+    regional_roles = [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]
+    if is_role_in(current_user.role, regional_roles):
         if not current_user.region_id or str(current_user.region_id) != str(region_id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -78,8 +82,9 @@ def enforce_region_scope(current_user: User, region_id: str) -> None:
 def require_statutory_authority(current_user: User) -> None:
     """
     Statutory Safeguard: Only Competent Authority (COMP_AUTH) can issue final statutory approvals/rejections.
+    SYS_ADMIN, regional officers, or other roles CANNOT issue final statutory approvals.
     """
-    if current_user.role != UserRole.COMP_AUTH.value:
+    if normalize_role(current_user.role) != UserRole.COMP_AUTH.value:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Regulatory Safeguard: Final statutory approval or rejection decisions are strictly reserved for the Competent Authority."

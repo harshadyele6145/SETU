@@ -9,7 +9,11 @@ import {
   RefreshCw, 
   Database,
   Layers,
-  ArrowDownToLine
+  ArrowDownToLine,
+  Server,
+  AlertTriangle,
+  Clock,
+  Info
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { DataTrustBadge } from '../components/DataTrustBadge';
@@ -40,6 +44,8 @@ interface ProviderInfo {
   display_name: string;
   data_category: string;
   is_connected: boolean;
+  is_configured?: boolean;
+  last_sync_time?: string;
   latency_ms: number;
   simulated_failure_active: boolean;
   details: Record<string, any>;
@@ -326,24 +332,31 @@ export const IntegrationMonitorPage: React.FC = () => {
         </div>
       )}
 
-      {/* Gateway Health Status Cards */}
+      {/* Gateway Telemetry Status Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Gateway Status</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Mock Gateway State</span>
           <div className="mt-2 flex items-center gap-2">
-            {health?.is_connected ? (
+            {!health?.simulated_failure_active ? (
               <>
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                <span className="text-sm font-bold text-emerald-700">ONLINE & CONNECTED</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                <span className="text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                  MOCK SIMULATION (STANDBY)
+                </span>
               </>
             ) : (
               <>
                 <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-                <span className="text-sm font-bold text-rose-700">SIMULATED OUTAGE ACTIVE</span>
+                <span className="text-xs font-bold text-rose-800 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                  SIMULATED 503/504 OUTAGE
+                </span>
               </>
             )}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">{health?.adapter_name || 'Loading...'}</p>
+          <p className="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1">
+            <Info className="w-3 h-3 text-slate-400" />
+            Prototype harness — no live state modified
+          </p>
         </div>
 
         <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
@@ -351,7 +364,7 @@ export const IntegrationMonitorPage: React.FC = () => {
           <div className="mt-2 text-xl font-bold text-slate-800">
             {health?.latency_ms ? `${health.latency_ms} ms` : '12.4 ms'}
           </div>
-          <p className="text-[11px] text-teal-600 mt-1">Within 50ms SLA target</p>
+          <p className="text-[11px] text-teal-600 mt-1">Within 50ms statutory SLA target</p>
         </div>
 
         <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
@@ -359,7 +372,7 @@ export const IntegrationMonitorPage: React.FC = () => {
           <div className="mt-2 text-sm font-bold text-slate-800">
             BaseIntegrationProvider
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Clean adapter abstraction</p>
+          <p className="text-[11px] text-slate-500 mt-1">Clean adapter pattern abstraction</p>
         </div>
 
         <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
@@ -367,7 +380,144 @@ export const IntegrationMonitorPage: React.FC = () => {
           <div className="mt-2 text-xl font-bold text-teal-700">
             {health?.details?.total_mock_calls ?? 0} invocations
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Logged to audit trail</p>
+          <p className="text-[11px] text-slate-500 mt-1">Logged to cryptographic audit ledger</p>
+        </div>
+      </div>
+
+      {/* Registered Integration Providers & Public Reference Adapters */}
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <Server className="w-4 h-4 text-teal-600" />
+              Registered Integration Providers & Gateway Connectivity Directory
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Definitive upstream connectivity status, configuration state, last synchronization timestamps, and access blockers.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
+              {providers.length} registered adapters
+            </span>
+          </div>
+        </div>
+
+        <div className="divide-y divide-slate-100">
+          {providers.map((prov) => {
+            const isMock = prov.data_category === 'CATEGORY_A_SYNTHETIC';
+            const isOnod = prov.data_category === 'CATEGORY_B_PUBLIC_REFERENCE';
+            const isOperational = prov.data_category === 'CATEGORY_C_REAL_OPERATIONAL';
+            const details = prov.details || {};
+            const blocker = details.access_blocker || null;
+            const recordsCreated = details.records_created ?? details.available_reference_institutions ?? 0;
+            const recordsUpdated = details.records_updated ?? 0;
+            const lastSync = prov.last_sync_time || details.last_sync_time;
+
+            return (
+              <div key={prov.provider_id} className="p-4 hover:bg-slate-50/50 transition-colors space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-slate-900 text-xs sm:text-sm">
+                      {prov.display_name}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                      {prov.provider_id}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Source Category Badge */}
+                    {isMock && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                        Category A: Synthetic Seed
+                      </span>
+                    )}
+                    {isOnod && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200">
+                        Category B: Public Reference
+                      </span>
+                    )}
+                    {isOperational && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        Category C: Operational
+                      </span>
+                    )}
+
+                    {/* Configuration State */}
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                      Configured: {prov.is_configured !== false ? 'Yes' : 'Planned'}
+                    </span>
+
+                    {/* Real Connectivity Verification Status */}
+                    {isMock && (
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        prov.simulated_failure_active
+                          ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                          : 'bg-amber-50 text-amber-800 border border-amber-200'
+                      }`}>
+                        {prov.simulated_failure_active ? 'Simulated 503 Outage' : 'Mock / Local Simulation'}
+                      </span>
+                    )}
+                    {isOnod && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3 text-amber-600" />
+                        Live Sync Blocked (HTTP 502) / Offline Catalog Active
+                      </span>
+                    )}
+                    {isOperational && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">
+                        Requires NIC Client Certs
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Provider Detailed Metrics */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50 p-3 rounded border border-slate-200/80 text-[11px]">
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">Endpoint / Target</span>
+                    <span className="font-mono text-slate-700 truncate block mt-0.5">
+                      {details.upstream_endpoint || 'In-Memory / Local IPC'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">Last Synchronization</span>
+                    <span className="text-slate-700 flex items-center gap-1 mt-0.5">
+                      <Clock className="w-3 h-3 text-slate-400" />
+                      {lastSync ? new Date(lastSync).toLocaleString('en-IN') : 'Not yet synchronized'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">Records Ingested / Updated</span>
+                    <span className="text-slate-800 font-semibold mt-0.5 block">
+                      {recordsCreated} created / {recordsUpdated} updated
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase font-semibold">Catalog Version</span>
+                    <span className="text-teal-700 font-mono font-medium mt-0.5 block">
+                      {details.active_catalog_version || details.public_catalog_version || 'v1.0-DEMO'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Diagnostic Warnings & Access Blockers */}
+                {blocker && (
+                  <div className="p-2.5 bg-amber-50/70 border border-amber-200/80 rounded text-[11px] text-amber-900 flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-semibold text-amber-950">Verified Gateway Access Blocker: </span>
+                      {blocker}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

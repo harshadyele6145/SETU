@@ -146,7 +146,7 @@ def export_pendency_csv(
             query = query.filter(Application.route == route)
         apps = query.order_by(desc(Application.stage_entered_at)).all()
 
-    if current_user.role in [UserRole.INST_ADMIN.value, UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value, UserRole.COMMITTEE_MBR.value] and apps:
+    if current_user.role in [UserRole.INST_ADMIN.value, UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value, UserRole.COMMITTEE_MBR.value, UserRole.COMM_MEMBER.value] and apps:
         if status:
             query = query.filter(Application.status == status)
         if route:

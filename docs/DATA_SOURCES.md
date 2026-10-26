@@ -59,10 +59,19 @@ SETU includes an adapter for official AICTE Open Data Portal / ONOD (Open Networ
 
 | Entity / Dataset | Upstream Source | Update Frequency | SETU Consumption Mode |
 |---|---|---|---|
-| **Approved Technical Institutions Directory** | `aicte-india.org/reports/approval` | Annual / Periodic Gazette | Cached mirror via `AICTEOpenDataProvider` with deduplication |
+| **Approved Technical Institutions Directory** | `https://onod.aicte-india.org/` | Annual / Periodic Gazette | Tested upstream probe; offline snapshot fallback `ONOD-2026.01` |
 | **Approved Programme & Intake Catalog** | AICTE National Portal | Per Approval Cycle | Read-only reference lookup during Route A-D validation |
 | **State / District / Pin Jurisdiction Matrix** | Department of Higher Education (MoE) | Static / Annual Gazette | Regional mapping across Northern, Western, Southern, Eastern, Central ROs |
 | **Gazetted National Holidays List** | DoPT / Ministry of Personnel | Annual | Calendar engine input for statutory working-day SLA reckoning |
+
+### 3.1 Upstream ONOD Live Probe & Gateway Diagnostics
+
+On October 27, 2026, an automated network probe was executed against the official national ONOD gateway:
+- **Target URL**: `https://onod.aicte-india.org/`
+- **Gateway Server**: `Microsoft-Azure-Application-Gateway/v2`
+- **Probe HTTP Status**: `502 Bad Gateway`
+- **Diagnostic Finding**: The public gateway endpoint is either in maintenance or restricted to private VNet / NIC intranet peering. Public automated unauthenticated REST querying is blocked upstream.
+- **Statutory Integrity Compliance**: SETU does **not** fabricate simulated live responses or claim a live operational connection to AICTE production backends. The provider explicitly reports `is_connected = False` and surfaces a clear warning in the Integration Monitor while serving the verified gazetted reference catalog snapshot (`ONOD-2026.01`).
 
 ---
 

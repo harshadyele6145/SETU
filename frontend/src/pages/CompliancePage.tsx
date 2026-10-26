@@ -299,7 +299,7 @@ export const CompliancePage: React.FC = () => {
                             {ev.verification_status}
                           </span>
                           {/* Review button for authorized roles */}
-                          {(user?.role === 'COMP_REVIEW' || user?.role === 'RO_OFFICER' || user?.role === 'BO_OFFICER') &&
+                          {['COMP_REVIEW', 'COMP_REV', 'RO_OFFICER', 'REGIONAL_DIR', 'BO_OFFICER', 'BUREAU_OFFICER', 'COMP_AUTH', 'SYS_ADMIN'].includes(user?.role || '') &&
                             ev.verification_status === 'SUBMITTED' && (
                               <button
                                 onClick={() => setVerifyModal({ open: true, evidence: ev, obligation: ob })}

@@ -1,4 +1,5 @@
 import os
+import sys
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,18 +31,21 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     run_schema_migrations()
     
-    # Check for missed background jobs on startup
-    try:
-        with SessionLocal() as db:
-            scheduler_service.check_missed_jobs_and_recover(db)
-    except Exception as e:
-        import logging
-        logging.getLogger("setu").warning(f"Initial job recovery check warning: {e}")
+    # Check for missed background jobs on startup (skip in test mode to avoid event-loop blocking)
+    is_test_mode = settings.ENVIRONMENT == "testing" or os.environ.get("TESTING") == "1" or "pytest" in sys.modules
+    if not is_test_mode:
+        try:
+            with SessionLocal() as db:
+                scheduler_service.check_missed_jobs_and_recover(db)
+        except Exception as e:
+            import logging
+            logging.getLogger("setu").warning(f"Initial job recovery check warning: {e}")
 
-    # Start background scheduler
-    scheduler_service.start()
+        # Start background scheduler
+        scheduler_service.start()
     yield
-    scheduler_service.stop()
+    if not is_test_mode:
+        scheduler_service.stop()
 
 
 app = FastAPI(

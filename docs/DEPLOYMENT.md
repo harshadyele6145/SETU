@@ -99,3 +99,20 @@ SETU includes a background scheduler (`backend/app/services/scheduler.py`) that 
 - **Observability**:
   - Live job execution history is queryable at `GET /health/jobs`.
 
+---
+
+## 6. Verification & Performance Validation
+
+To validate enterprise scalability after provisioning:
+
+```bash
+# 1. Verify schema migrations
+alembic upgrade head
+
+# 2. Run automated test suite (82 passing tests)
+pytest backend/tests -v
+
+# 3. Run enterprise scalability benchmark suite
+python backend/tests/benchmark_scalability.py
+```
+

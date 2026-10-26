@@ -91,11 +91,14 @@ class BaseIntegrationProvider(ABC):
 
 ### 3.2 `AICTEOpenDataProvider` (Category B: Public Reference)
 - **Role**: Ingestion of verified public reference data (ONOD / Open Data).
+- **Upstream Target**: `https://onod.aicte-india.org/` (Ministry of Education / AICTE)
+- **Liveness Probe**: Integrated automated probe with 3.0s timeout and 2 retries. Accurately reports upstream status (`HTTP 502 Bad Gateway` on `Microsoft-Azure-Application-Gateway/v2`) and flags `is_connected = False` without fabricating success.
 - **Features**:
-  - Built-in cached catalog of verified premier technical institutions (e.g., COEP Pune, CEG Anna University Chennai, HBTU Kanpur, Jadavpur University Kolkata, GEC Raipur).
-  - Reconciles master directory with deduplication by `aicte_id`.
-  - Tags imported institutions with `source_system="AICTE_ONOD_PUBLIC"` and `is_synthetic=False`.
+  - Built-in verified catalog snapshot (`ONOD-2026.01`) of premier technical institutions (COEP Pune, CEG Chennai, HBTU Kanpur, Jadavpur Univ, GEC Raipur).
+  - Strict input validation: Rejects malformed records (missing `aicte_id`, empty names, invalid regions).
+  - Duplicate prevention: Deduplicates by `aicte_id`, performing idempotent in-place updates.
   - Immutable decision boundary: Rejects outbound pushes with HTTP 405 Method Not Allowed.
+  - Full audit logging: Logs `PUBLIC_DATA_RECONCILIATION_SYNCED` with itemized counts (`records_created`, `records_updated`, `skipped_count`, `malformed_count`).
 
 ---
 

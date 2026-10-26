@@ -6,7 +6,7 @@ from sqlalchemy import select
 from backend.app.models.compliance import ComplianceObligation, ComplianceEvidence
 from backend.app.models.institution import Institution
 from backend.app.models.user import User
-from backend.app.core.security import UserRole
+from backend.app.core.security import UserRole, is_role_in, normalize_role
 from backend.app.core.storage import storage_service
 from backend.app.services.auth_service import enforce_institution_scope
 from backend.app.services.audit_service import audit_service
@@ -73,6 +73,13 @@ class ComplianceService:
         if not obligation:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Compliance obligation not found")
 
+        # Invariant INV-03: Terminal Decision Immutability
+        if obligation.application and obligation.application.status in ("APPROVED", "REJECTED"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Statutory Invariant Violation (INV-03): Cannot submit compliance evidence for an application in terminal state '{obligation.application.status}'."
+            )
+
         enforce_institution_scope(actor, obligation.institution_id)
 
         # Save file to protected storage and compute SHA-256 hash
@@ -130,11 +137,15 @@ class ComplianceService:
     ) -> ComplianceEvidence:
         allowed_roles = (
             UserRole.COMP_REVIEW.value,
+            UserRole.COMP_REV.value,
             UserRole.RO_OFFICER.value,
+            UserRole.REGIONAL_DIR.value,
             UserRole.BO_OFFICER.value,
-            UserRole.COMP_AUTH.value
+            UserRole.BUREAU_OFFICER.value,
+            UserRole.COMP_AUTH.value,
+            UserRole.SYS_ADMIN.value
         )
-        if reviewer.role not in allowed_roles:
+        if not is_role_in(reviewer.role, allowed_roles):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Unauthorized: Role {reviewer.role} cannot verify compliance evidence."
@@ -151,6 +162,12 @@ class ComplianceService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Evidence record not found")
 
         obligation = evidence.obligation
+        # Invariant INV-03: Terminal Decision Immutability
+        if obligation and obligation.application and obligation.application.status in ("APPROVED", "REJECTED"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Statutory Invariant Violation (INV-03): Cannot verify compliance evidence for an application in terminal state '{obligation.application.status}'."
+            )
         now = datetime.now(timezone.utc)
 
         prev_status = evidence.verification_status

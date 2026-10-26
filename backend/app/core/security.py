@@ -21,6 +21,45 @@ class UserRole(str, Enum):
     SYS_ADMIN = "SYS_ADMIN"          # System Administrator
 
 
+ROLE_ALIASES: Dict[str, str] = {
+    "BUREAU_OFFICER": "BO_OFFICER",
+    "BO_OFFICER": "BO_OFFICER",
+    "COMMITTEE_MBR": "COMM_MEMBER",
+    "COMM_MEMBER": "COMM_MEMBER",
+    "COMP_REV": "COMP_REVIEW",
+    "COMP_REVIEW": "COMP_REVIEW",
+    "INST_ADMIN": "INST_ADMIN",
+    "RO_OFFICER": "RO_OFFICER",
+    "REGIONAL_DIR": "REGIONAL_DIR",
+    "EVC_COORD": "EVC_COORD",
+    "COMP_AUTH": "COMP_AUTH",
+    "SYS_ADMIN": "SYS_ADMIN",
+}
+
+
+def normalize_role(role: Optional[str]) -> str:
+    """Returns canonical normalized role identifier."""
+    if not role:
+        return ""
+    clean = role.strip()
+    return ROLE_ALIASES.get(clean, clean)
+
+
+def role_matches(role1: Optional[str], role2: Optional[str]) -> bool:
+    """Compares two roles honoring canonical normalization and aliases."""
+    if not role1 or not role2:
+        return False
+    return normalize_role(role1) == normalize_role(role2)
+
+
+def is_role_in(role: Optional[str], allowed_roles: Any) -> bool:
+    """Checks whether a role is contained in allowed_roles, honoring all aliases."""
+    if not role:
+        return False
+    norm = normalize_role(role)
+    return any(norm == normalize_role(r) for r in allowed_roles)
+
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     password_bytes = plain_password.encode("utf-8")[:72]
     hashed_bytes = hashed_password.encode("utf-8")

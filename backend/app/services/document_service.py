@@ -7,7 +7,8 @@ from backend.app.models.document import DocumentRegistry
 from backend.app.models.institution import Institution
 from backend.app.models.user import User
 from backend.app.models.evc import EVCVisit, EVCExpert
-from backend.app.core.security import UserRole
+from backend.app.models.application import Application
+from backend.app.core.security import UserRole, is_role_in, normalize_role
 from backend.app.core.storage import storage_service
 from backend.app.services.auth_service import enforce_institution_scope
 from backend.app.services.audit_service import audit_service
@@ -28,6 +29,15 @@ class DocumentService:
         actor: User
     ) -> DocumentRegistry:
         enforce_institution_scope(actor, institution_id)
+
+        # Invariant INV-03: Terminal Decision Immutability
+        if application_id:
+            app_obj = db.get(Application, application_id)
+            if app_obj and app_obj.status in ("APPROVED", "REJECTED"):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Statutory Invariant Violation (INV-03): Cannot register documents for an application in terminal state '{app_obj.status}'."
+                )
 
         inst = db.get(Institution, institution_id)
         if not inst:
@@ -88,6 +98,15 @@ class DocumentService:
         if not old_doc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Previous document record not found")
 
+        # Invariant INV-03: Terminal Decision Immutability
+        if old_doc.application_id:
+            app_obj = db.get(Application, old_doc.application_id)
+            if app_obj and app_obj.status in ("APPROVED", "REJECTED"):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Statutory Invariant Violation (INV-03): Cannot renew documents for an application in terminal state '{app_obj.status}'."
+                )
+
         enforce_institution_scope(actor, old_doc.institution_id)
 
         rel_path, sha256_hash, file_size, content_type = await storage_service.save_upload(upload_file)
@@ -144,14 +163,17 @@ class DocumentService:
         comments: Optional[str],
         reviewer: User
     ) -> DocumentRegistry:
-        if reviewer.role not in [
+        allowed_roles = [
             UserRole.RO_OFFICER.value,
             UserRole.REGIONAL_DIR.value,
             UserRole.COMP_REV.value,
+            UserRole.COMP_REVIEW.value,
+            UserRole.BO_OFFICER.value,
             UserRole.BUREAU_OFFICER.value,
             UserRole.COMP_AUTH.value,
             UserRole.SYS_ADMIN.value
-        ]:
+        ]
+        if not is_role_in(reviewer.role, allowed_roles):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not authorized to verify statutory compliance documents"
@@ -159,6 +181,16 @@ class DocumentService:
 
         doc = db.get(DocumentRegistry, document_id)
         if not doc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document record not found")
+
+        # Invariant INV-03: Terminal Decision Immutability
+        if doc.application_id:
+            app_obj = db.get(Application, doc.application_id)
+            if app_obj and app_obj.status in ("APPROVED", "REJECTED"):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Statutory Invariant Violation (INV-03): Cannot verify documents for an application in terminal state '{app_obj.status}'."
+                )
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document record not found")
 
         # Regional scope check

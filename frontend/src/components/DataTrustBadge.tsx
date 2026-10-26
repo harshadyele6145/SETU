@@ -32,7 +32,7 @@ export const DataTrustBadge: React.FC<DataTrustBadgeProps> = ({
         className={`inline-flex items-center gap-1 font-mono font-medium rounded border ${
           compact ? 'text-[10px] px-1.5 py-0.5' : 'text-xs px-2 py-0.5'
         } bg-blue-50 text-blue-800 border-blue-300`}
-        title="Category B: Public Reference Data (Ingested from official AICTE Open Data Portal / ONOD)"
+        title="Category B: Public Reference Data (Verified AICTE Open Reference Snapshot — Version ONOD-2026.01)"
       >
         <Database className={compact ? 'w-2.5 h-2.5 text-blue-600' : 'w-3 h-3 text-blue-600'} />
         <span>PUBLIC DATA</span>

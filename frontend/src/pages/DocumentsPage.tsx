@@ -318,7 +318,7 @@ export const DocumentsPage: React.FC = () => {
                       )}
 
                       {/* Officer Verify Renewal Button */}
-                      {(user?.role === 'RO_OFFICER' || user?.role === 'BO_OFFICER' || user?.role === 'COMP_REVIEW') &&
+                      {['RO_OFFICER', 'REGIONAL_DIR', 'BO_OFFICER', 'BUREAU_OFFICER', 'COMP_REVIEW', 'COMP_REV', 'COMP_AUTH', 'SYS_ADMIN'].includes(user?.role || '') &&
                         doc.status === 'RENEWAL_SUBMITTED' && (
                           <button
                             onClick={() => handleVerify(doc.id, true)}

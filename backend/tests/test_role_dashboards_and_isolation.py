@@ -117,7 +117,7 @@ def test_bureau_officer_and_competent_authority_cross_regional_dashboard(client:
     Verifies that Bureau Officers and Competent Authorities have authorized cross-regional visibility.
     """
     seed_database(db_session, generate_alerts=True)
-
+    
     # 1. Bureau Officer
     bo_token = get_token_for(client, "bo_officer@aicte.gov.in")
     bo_res = client.get("/api/dashboard/stats", headers={"Authorization": f"Bearer {bo_token}"})

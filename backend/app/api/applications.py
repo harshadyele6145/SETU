@@ -167,7 +167,7 @@ def get_application(
     # Scope validation
     if current_user.role == UserRole.INST_ADMIN.value:
         enforce_institution_scope(current_user, app.institution_id)
-    elif current_user.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value]:
+    elif current_user.role in [UserRole.RO_OFFICER.value, UserRole.REGIONAL_DIR.value, UserRole.EVC_COORD.value]:
         enforce_region_scope(current_user, app.region_id)
     elif current_user.role in [UserRole.COMMITTEE_MBR.value, UserRole.COMM_MEMBER.value]:
         from backend.app.models.evc import EVCVisit, EVCExpert

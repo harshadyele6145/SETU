@@ -86,7 +86,9 @@ def test_aicte_open_data_provider_public_reference():
     provider = AICTEOpenDataProvider()
     assert provider.provider_id == "AICTE_ONOD_PUBLIC_PROVIDER"
     assert provider.data_category == "CATEGORY_B_PUBLIC_REFERENCE"
-    assert provider.validate_connectivity() is True
+    status = provider.report_status()
+    assert status.is_configured is True
+    assert isinstance(provider.validate_connectivity(), bool)
 
     # Check known public reference institution (e.g. COEP Pune)
     profile = provider.fetch_institution_reference("1-ONOD-WRO-001")

@@ -14,7 +14,7 @@ from backend.app.adapters.external_portal import (
 )
 from backend.app.services.audit_service import audit_service
 from backend.app.services.integration_service import integration_service
-from backend.app.core.security import UserRole
+from backend.app.core.security import UserRole, is_role_in, normalize_role
 
 router = APIRouter(prefix="/api/integrations", tags=["AICTE External Portal Integration"])
 
@@ -130,6 +130,19 @@ def toggle_adapter_failure(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    authorized_roles = {
+        UserRole.BUREAU_OFFICER.value,
+        UserRole.BO_OFFICER.value,
+        UserRole.REGIONAL_DIR.value,
+        UserRole.COMP_AUTH.value,
+        UserRole.SYS_ADMIN.value,
+    }
+    if not is_role_in(current_user.role, authorized_roles):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Unauthorized: Only System Administrators, Bureau Officers, Regional Directors, or Competent Authority may toggle adapter failure mode."
+        )
+
     mock_portal_adapter.set_simulate_failure(payload.simulate_failure)
     
     audit_service.record_event(
@@ -155,6 +168,19 @@ def test_push_decision(
     payload: PushDecisionRequest,
     current_user: User = Depends(get_current_user)
 ):
+    authorized_roles = {
+        UserRole.BUREAU_OFFICER.value,
+        UserRole.BO_OFFICER.value,
+        UserRole.COMP_AUTH.value,
+        UserRole.SYS_ADMIN.value,
+        UserRole.REGIONAL_DIR.value,
+    }
+    if not is_role_in(current_user.role, authorized_roles):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Unauthorized: Role is not authorized to trigger gateway push determinations."
+        )
+
     result = integration_service.push_approval_decision(
         application_no=payload.application_no,
         decision=payload.decision,
@@ -183,6 +209,14 @@ def fetch_institution_profile(
     aicte_id: str,
     current_user: User = Depends(get_current_user)
 ):
+    if normalize_role(current_user.role) == UserRole.INST_ADMIN.value:
+        if current_user.institution and current_user.institution.aicte_id:
+            if current_user.institution.aicte_id != aicte_id and not aicte_id.startswith("1-ONOD-"):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Security violation: Institution Administrators may only fetch their own institutional profile or public reference data."
+                )
+
     try:
         profile = integration_service.fetch_institution_profile(aicte_id=aicte_id)
         
