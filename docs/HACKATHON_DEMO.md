@@ -163,3 +163,4 @@ As required for hackathon integrity and institutional pilot readiness:
    - Live automated REST queries to `https://onod.aicte-india.org/` currently yield `HTTP/1.1 502 Bad Gateway` from Microsoft Azure Application Gateway upstream. SETU does not disguise this; it displays the real connectivity status and serves cached reference data safely.
 3. **Database Architecture:**
    - Local demonstration utilizes SQLite with WAL mode enabled. Production PostgreSQL migrations, connection pooling, and table schemas have been verified and validated.
+

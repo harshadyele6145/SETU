@@ -171,3 +171,4 @@ def test_data_provenance_cryptographic_separation(client: TestClient, db_session
     assert prov["institutions"]["total"] == 15
     assert "Category A" in prov["trust_statement"]
     assert "Category B" in prov["trust_statement"]
+
